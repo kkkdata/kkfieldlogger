@@ -23,6 +23,14 @@
         .plain-card code { font-size: 13px; padding: 1px 5px; border-radius: 4px; background: rgba(127,127,127,.15); }
         .plain-card pre { overflow-x: auto; padding: 10px 12px; border-radius: 8px; background: rgba(127,127,127,.12); font-size: 13px; }
         .tip { border-left: 3px solid #4a90d9; padding: 6px 12px; margin: 10px 0; background: rgba(74,144,217,.08); border-radius: 0 6px 6px 0; }
+        figure.shot { margin: 16px 0; }
+        figure.shot img { width: 100%; height: auto; border: 1px solid rgba(127,127,127,.35); border-radius: 8px; display: block; }
+        figure.shot figcaption { font-size: 13px; opacity: .75; margin-top: 6px; text-align: center; }
+        @media print {
+            .public-header, .public-footer, .lang-switch { display: none !important; }
+            .plain-card { break-inside: avoid; box-shadow: none !important; }
+            a { text-decoration: none; color: inherit; }
+        }
     </style>
 </head>
 <body data-lang="zh">
@@ -52,6 +60,10 @@
             <p class="lead">
                 <span class="lang-zh">覆盖安装部署、工人拍摄、经理后台、AI 助手、数据维护与故障排查。适用于 0.9.x 测试版（云端与 NAS 私有部署通用，差异处会单独标注）。</span>
                 <span class="lang-en">Covers installation, field capture, the manager portal, AI assist, data maintenance, and troubleshooting. Applies to the 0.9.x beta (cloud and self-hosted NAS editions alike; differences are flagged where they exist).</span>
+            </p>
+            <p style="font-size:13px;opacity:.7;">
+                <span class="lang-zh">提示：浏览器「打印」本页即可保存为 PDF 手册。截图均来自演示数据。</span>
+                <span class="lang-en">Tip: use your browser's Print to save this page as a PDF manual. Screenshots show demo data.</span>
             </p>
 
             <section class="plain-card">
@@ -132,6 +144,11 @@
                     <span class="lang-zh">镜像为 <code>kkkdata/kkfieldlogger</code>，同一 tag 同时支持 <code>amd64</code> 与 <code>arm64</code>。标准版即够用；<code>-full</code> 变体额外内置语音转写与视频关键帧提取（体积更大，建议 x86 使用）。</span>
                     <span class="lang-en">Images: <code>kkkdata/kkfieldlogger</code>; each tag serves both <code>amd64</code> and <code>arm64</code>. The standard variant is enough for most; the <code>-full</code> variant adds in-image voice transcription and video keyframes (bigger; best on x86).</span>
                 </p>
+                <h3><span class="lang-zh">2.3 从外网访问（HTTPS）</span><span class="lang-en">2.3 Remote access (HTTPS)</span></h3>
+                <p>
+                    <span class="lang-zh">系统默认监听 HTTP。如需从工地/外网访问，建议在前面加一层反向代理并启用 HTTPS：TerraMaster 可用 TOS 自带的反向代理/证书功能，其他环境可用 Nginx、Caddy 或 Cloudflare Tunnel，把域名转发到本机的 <code>8090</code> 端口即可，应用无需额外配置。手机 App 中的服务器地址填写代理后的 HTTPS 域名。</span>
+                    <span class="lang-en">The app listens on plain HTTP. For access from the field, put a reverse proxy with HTTPS in front: TOS's built-in reverse proxy/certificates on TerraMaster, or Nginx / Caddy / Cloudflare Tunnel elsewhere — just forward your domain to port <code>8090</code>; no app-side changes needed. Point the mobile app's server address at the proxied HTTPS domain.</span>
+                </p>
             </section>
 
             <section class="plain-card">
@@ -163,11 +180,19 @@
                     <span class="lang-zh">浏览器访问 <code>/login</code> 登录。界面语言可在「语言」菜单切换（中文/英文）。</span>
                     <span class="lang-en">Sign in at <code>/login</code>. Interface language (中文/English) switches from the Language menu.</span>
                 </p>
+                <figure class="shot">
+                    <img src="/img/manual/login.png" alt="Login page" loading="lazy">
+                    <figcaption><span class="lang-zh">登录页</span><span class="lang-en">Login page</span></figcaption>
+                </figure>
                 <h3><span class="lang-zh">5.1 今日工作台（登录首页）</span><span class="lang-en">5.1 Today workbench (landing page)</span></h3>
                 <p>
                     <span class="lang-zh">回答一个问题：<strong>今天有什么需要我处理？</strong>集中显示今日上传动态、异常告警（任务队列积压、处理失败）、待办入口。想用旧版总览，点「经典视图」。</span>
                     <span class="lang-en">It answers one question: <strong>what needs my attention today?</strong> Today's upload activity, alerts (queue backlog, failed processing), and shortcuts. The classic dashboard is one click away.</span>
                 </p>
+                <figure class="shot">
+                    <img src="/img/manual/today.png" alt="Today workbench" loading="lazy">
+                    <figcaption><span class="lang-zh">今日工作台：上传脉搏、队列状态、待审入口一屏看全</span><span class="lang-en">Today workbench: upload pulse, queue state, and review shortcuts on one screen</span></figcaption>
+                </figure>
                 <h3><span class="lang-zh">5.2 照片库</span><span class="lang-en">5.2 Photo library</span></h3>
                 <ul>
                     <li><span class="lang-zh"><strong>筛选</strong>：按项目、员工、日期、审核状态过滤；支持网格（图库）和<strong>地图视图</strong>（按 GPS 落点看照片分布）。</span><span class="lang-en"><strong>Filter</strong> by project, employee, date, review status; grid (gallery) and a <strong>map view</strong> plotting photos by GPS.</span></li>
@@ -176,6 +201,10 @@
                     <li><span class="lang-zh"><strong>回收站</strong>：删除先进回收站，可随时恢复；NAS 版 30 天后自动清理，也可手动清空。彻底销毁不可恢复。</span><span class="lang-en"><strong>Recycle bin</strong>: deletes go to the bin and can be restored; the NAS edition auto-purges after 30 days, or empty it manually. Destroy is permanent.</span></li>
                     <li><span class="lang-zh"><strong>客户可见性</strong>：客户账号默认看不到任何照片，只有明确标记的才会出现——先审后见。</span><span class="lang-en"><strong>Client visibility</strong>: client accounts see nothing until a photo is explicitly marked visible — curation first.</span></li>
                 </ul>
+                <figure class="shot">
+                    <img src="/img/manual/photos.png" alt="Photo review page" loading="lazy">
+                    <figcaption><span class="lang-zh">照片库：多维筛选 + 批量操作 + 回收站</span><span class="lang-en">Photo library: filters, bulk actions, recycle bin</span></figcaption>
+                </figure>
                 <h3><span class="lang-zh">5.3 项目</span><span class="lang-en">5.3 Projects</span></h3>
                 <p>
                     <span class="lang-zh">建项目、改名、看单项目照片汇总；「导出」可把项目资料打包带走。</span>
@@ -186,11 +215,19 @@
                     <li><span class="lang-zh"><strong>员工</strong>（工人）：添加、分配项目、停用/启用；上传密钥可<strong>重新生成</strong>（旧密钥立即失效，适用于手机丢失或人员离场）。</span><span class="lang-en"><strong>Employees</strong> (workers): add, assign projects, activate/deactivate; upload keys can be <strong>regenerated</strong> (the old key dies instantly — for lost phones or departures).</span></li>
                     <li><span class="lang-zh"><strong>用户</strong>（后台账号）：管理员可调整角色、重置密码、停用账号。</span><span class="lang-en"><strong>Users</strong> (portal accounts): admins change roles, reset passwords, deactivate.</span></li>
                 </ul>
+                <figure class="shot">
+                    <img src="/img/manual/employees.png" alt="Employees page" loading="lazy">
+                    <figcaption><span class="lang-zh">员工管理：上传密钥的发放与轮换</span><span class="lang-en">Employees: issuing and rotating upload keys</span></figcaption>
+                </figure>
                 <h3><span class="lang-zh">5.5 报告</span><span class="lang-en">5.5 Reports</span></h3>
                 <p>
                     <span class="lang-zh">按项目和日期范围生成 PDF 报告，可下载存档；还有<strong>进度对比</strong>视图（同一项目不同时间段的对照）。生成失败可一键重试。</span>
                     <span class="lang-en">Generate PDF reports by project and date range, download for filing; a <strong>progress-compare</strong> view sets two periods of the same project side by side. Failed generations retry with one click.</span>
                 </p>
+                <figure class="shot">
+                    <img src="/img/manual/reports.png" alt="Reports page" loading="lazy">
+                    <figcaption><span class="lang-zh">报告中心：按项目和日期出 PDF</span><span class="lang-en">Reports: PDF by project and date range</span></figcaption>
+                </figure>
                 <h3><span class="lang-zh">5.6 IP 摄像头</span><span class="lang-en">5.6 IP cameras</span></h3>
                 <p>
                     <span class="lang-zh">可接入工地固定 IP 摄像头做定时抓拍，支持连通性测试与健康状态总览，也可批量添加。</span>
@@ -205,6 +242,11 @@
                 <p>
                     <span class="lang-zh">「设置」管工作区级选项；「个人资料」改自己的密码。</span>
                     <span class="lang-en">Settings holds workspace-level options; Profile is where you change your own password.</span>
+                </p>
+                <h3><span class="lang-zh">5.9 客户相册（给业主看什么）</span><span class="lang-en">5.9 Client gallery (what the client sees)</span></h3>
+                <p>
+                    <span class="lang-zh">「客户相册」页汇总所有被标记为客户可见的照片——这正是客户账号登录后看到的内容。把它当成发布前的预览台：先在这里检查一遍，再决定是否给客户开账号。没标记过任何照片时，客户什么也看不到。</span>
+                    <span class="lang-en">The Client Gallery page collects every photo marked client-visible — exactly what a client account sees after signing in. Treat it as a pre-publication preview: check here first, then decide when to hand out client credentials. With nothing marked, clients see nothing.</span>
                 </p>
             </section>
 
@@ -240,6 +282,16 @@
                 <p>
                     <span class="lang-zh">应用中心内点击更新即可；自建 Docker 部署执行 <code>docker compose pull &amp;&amp; docker compose up -d</code>。数据库迁移在启动时自动完成（升级前自动备份见 7.1）。</span>
                     <span class="lang-en">Click update in the App Center; plain Docker installs run <code>docker compose pull &amp;&amp; docker compose up -d</code>. Migrations apply automatically on boot (with the pre-upgrade backup from 7.1).</span>
+                </p>
+                <h3><span class="lang-zh">7.4 卸载与重装</span><span class="lang-en">7.4 Uninstall &amp; reinstall</span></h3>
+                <p>
+                    <span class="lang-zh">数据（照片、数据库、备份）都在 <code>DockerAppData/kkfieldlogger/</code> 目录里，与应用本体分离。重装后指向同一目录即可原地恢复全部数据。<strong>卸载前请务必先把该目录整体备份一份</strong>——不同平台的卸载流程对数据目录的处理方式不一，先备份再操作永远不亏。</span>
+                    <span class="lang-en">All data (photos, database, backups) lives in <code>DockerAppData/kkfieldlogger/</code>, separate from the app itself. Reinstall against the same directory and everything comes back. <strong>Back that directory up before uninstalling</strong> — platforms differ in how uninstall treats data directories, and a copy first never hurts.</span>
+                </p>
+                <h3><span class="lang-zh">7.5 云端与 NAS 之间迁移</span><span class="lang-en">7.5 Migrating between cloud and NAS</span></h3>
+                <p>
+                    <span class="lang-zh">托管云版与 NAS 私有版使用完全相同的数据库结构，数据可以整体迁移——从云端搬回自己的 NAS，或反过来，都不丢任何记录。需要迁移时联系支持邮箱，我们协助完成。</span>
+                    <span class="lang-en">The hosted cloud and the self-hosted NAS edition share an identical database schema, so data moves wholesale in either direction without losing a record. Contact support when you want to migrate and we'll assist.</span>
                 </p>
             </section>
 
