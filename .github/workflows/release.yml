@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+      - "[0-9]*"
 
 permissions:
   contents: write
@@ -17,8 +18,11 @@ jobs:
         run: |
           cd deploy/nas
           tar czf kkfieldlogger.tar.gz config.ini kkfieldlogger.lang kkfieldlogger.svg docker-compose.yml
+          cp kkfieldlogger.tar.gz "kkfieldlogger-${GITHUB_REF_NAME#v}.tar.gz" 
       - name: Create release with package asset
         uses: softprops/action-gh-release@v2
         with:
-          files: deploy/nas/kkfieldlogger.tar.gz
+          files: |
+            deploy/nas/kkfieldlogger.tar.gz
+            deploy/nas/kkfieldlogger-*.tar.gz
           generate_release_notes: true
