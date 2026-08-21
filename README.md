@@ -37,7 +37,10 @@ docker compose up -d
 
 Images: [`kkkdata/kkfieldlogger`](https://hub.docker.com/r/kkkdata/kkfieldlogger)
 (slim, ~220 MB compressed) and `:-full` (adds in-image voice transcription
-and video keyframes). `linux/amd64` today; `arm64` planned.
+and video keyframes). Multi-arch: `linux/amd64` and `linux/arm64` under the
+same tags. ARM devices need 2GB+ RAM.
+
+User manual (中文/EN): https://api2.kkdatasvc.com/guide
 
 ## NAS editions
 

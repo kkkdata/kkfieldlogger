@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="KK Field Logger 使用流程。How KK Field Logger works.">
-    <title>使用流程 | KK Field Logger</title>
+    <meta name="description" content="KK Field Logger 使用说明书。KK Field Logger user manual.">
+    <title>使用说明书 | KK Field Logger</title>
     <link rel="icon" href="/static/img/kk-logo.png">
     <link rel="stylesheet" href="/site.css">
     <style>
@@ -14,6 +14,15 @@
             background: none; border: 1px solid currentColor; border-radius: 6px;
             padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
         }
+        .manual-toc { columns: 2; column-gap: 32px; padding-left: 20px; margin: 12px 0 0; }
+        .manual-toc li { margin: 4px 0; break-inside: avoid; }
+        @media (max-width: 640px) { .manual-toc { columns: 1; } }
+        .plain-card h3 { margin: 20px 0 8px; font-size: 16px; }
+        .plain-card table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+        .plain-card th, .plain-card td { border: 1px solid rgba(127,127,127,.35); padding: 6px 10px; text-align: left; vertical-align: top; }
+        .plain-card code { font-size: 13px; padding: 1px 5px; border-radius: 4px; background: rgba(127,127,127,.15); }
+        .plain-card pre { overflow-x: auto; padding: 10px 12px; border-radius: 8px; background: rgba(127,127,127,.12); font-size: 13px; }
+        .tip { border-left: 3px solid #4a90d9; padding: 6px 12px; margin: 10px 0; background: rgba(74,144,217,.08); border-radius: 0 6px 6px 0; }
     </style>
 </head>
 <body data-lang="zh">
@@ -23,7 +32,7 @@
                 <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
                 <span>
                     <strong>KK Field Logger</strong>
-                    <small><span class="lang-zh">使用流程</span><span class="lang-en">Guide</span></small>
+                    <small><span class="lang-zh">使用说明书</span><span class="lang-en">User Manual</span></small>
                 </span>
             </a>
             <nav class="public-nav" aria-label="Public navigation">
@@ -38,20 +47,239 @@
             </nav>
         </header>
         <main class="plain-page">
-            <p class="eyebrow"><span class="lang-zh">使用流程</span><span class="lang-en">How it works</span></p>
-            <h1><span class="lang-zh">拍照、审核、归档，三步走。</span><span class="lang-en">Capture, review, file — three steps.</span></h1>
+            <p class="eyebrow"><span class="lang-zh">使用说明书</span><span class="lang-en">User manual</span></p>
+            <h1><span class="lang-zh">KK Field Logger 使用说明书</span><span class="lang-en">KK Field Logger User Manual</span></h1>
             <p class="lead">
-                <span class="lang-zh">工作区开通后，管理员建项目、加员工、发上传密钥；之后现场和后台各干各的，记录自动汇合。</span><span class="lang-en">Once your workspace opens, admins set up projects, add employees, and issue upload keys. From there the field and the office each do their part; the records meet in the middle.</span>
+                <span class="lang-zh">覆盖安装部署、工人拍摄、经理后台、AI 助手、数据维护与故障排查。适用于 0.9.x 测试版（云端与 NAS 私有部署通用，差异处会单独标注）。</span>
+                <span class="lang-en">Covers installation, field capture, the manager portal, AI assist, data maintenance, and troubleshooting. Applies to the 0.9.x beta (cloud and self-hosted NAS editions alike; differences are flagged where they exist).</span>
             </p>
+
             <section class="plain-card">
-                <h2><span class="lang-zh">从零跑起来</span><span class="lang-en">Typical rollout</span></h2>
-                <ol>
-                    <li><span class="lang-zh">管理员创建项目和员工，发放上传密钥。</span><span class="lang-en">Admin creates projects and employees, issues upload keys.</span></li>
-                    <li><span class="lang-zh">工人装好 App、录入密钥，到工地就能拍。</span><span class="lang-en">Crews install the app, enter their key, and start shooting on site.</span></li>
-                    <li><span class="lang-zh">照片、视频、票据自动带上项目、工号、GPS 和时间上传。</span><span class="lang-en">Photos, video, and receipts upload with project, employee, GPS, and time attached.</span></li>
-                    <li><span class="lang-zh">经理在后台筛选、批注、审批，挑出能给业主看的照片。</span><span class="lang-en">Managers filter, annotate, approve, and pick what the client sees.</span></li>
-                    <li><span class="lang-zh">需要汇报时，从已审记录一键生成报告。</span><span class="lang-en">When it&#39;s time to report, build one from approved records in a click.</span></li>
+                <h2 id="toc"><span class="lang-zh">目录</span><span class="lang-en">Contents</span></h2>
+                <ol class="manual-toc">
+                    <li><a href="#overview"><span class="lang-zh">系统构成与角色</span><span class="lang-en">System &amp; roles</span></a></li>
+                    <li><a href="#install"><span class="lang-zh">安装与首次启动</span><span class="lang-en">Install &amp; first run</span></a></li>
+                    <li><a href="#rollout"><span class="lang-zh">快速上手三步</span><span class="lang-en">Quick start</span></a></li>
+                    <li><a href="#field"><span class="lang-zh">工人端：手机 App</span><span class="lang-en">Field: mobile app</span></a></li>
+                    <li><a href="#portal"><span class="lang-zh">经理后台逐页说明</span><span class="lang-en">Manager portal, page by page</span></a></li>
+                    <li><a href="#ai"><span class="lang-zh">AI 助手</span><span class="lang-en">AI assist</span></a></li>
+                    <li><a href="#maintenance"><span class="lang-zh">备份、保留与升级</span><span class="lang-en">Backups, retention &amp; upgrades</span></a></li>
+                    <li><a href="#troubleshooting"><span class="lang-zh">故障排查</span><span class="lang-en">Troubleshooting</span></a></li>
+                    <li><a href="#support"><span class="lang-zh">获取帮助</span><span class="lang-en">Getting help</span></a></li>
                 </ol>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="overview"><span class="lang-zh">1. 系统构成与角色</span><span class="lang-en">1. System &amp; roles</span></h2>
+                <p>
+                    <span class="lang-zh">系统由三部分组成：<strong>手机 App</strong>（工人现场拍摄上传）、<strong>管理后台</strong>（经理审核、管理、出报告）、<strong>服务器</strong>（云端工作区或您自己的 NAS/服务器）。每条上传记录自动附带项目、工号、GPS 和拍摄时间，构成可追溯的工地影像证据。</span>
+                    <span class="lang-en">Three parts: the <strong>mobile app</strong> (crews shoot and upload on site), the <strong>manager portal</strong> (review, admin, reports), and the <strong>server</strong> (a hosted workspace or your own NAS/server). Every upload carries project, employee, GPS, and capture time — a traceable evidence trail.</span>
+                </p>
+                <table>
+                    <tr>
+                        <th><span class="lang-zh">角色</span><span class="lang-en">Role</span></th>
+                        <th><span class="lang-zh">凭证</span><span class="lang-en">Credential</span></th>
+                        <th><span class="lang-zh">能做什么</span><span class="lang-en">What they do</span></th>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">管理员</span><span class="lang-en">Admin</span></td>
+                        <td><span class="lang-zh">邮箱 + 密码</span><span class="lang-en">Email + password</span></td>
+                        <td><span class="lang-zh">全部后台功能：建项目、管员工和用户、配置 AI、看审计日志</span><span class="lang-en">Everything in the portal: projects, employees, users, AI config, audit logs</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">经理 / 普通用户</span><span class="lang-en">Manager / user</span></td>
+                        <td><span class="lang-zh">邮箱 + 密码</span><span class="lang-en">Email + password</span></td>
+                        <td><span class="lang-zh">日常审核：筛照片、批注、审批、生成报告</span><span class="lang-en">Day-to-day review: filter, annotate, approve, build reports</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">工人（员工）</span><span class="lang-en">Worker (employee)</span></td>
+                        <td><span class="lang-zh">上传密钥（无需邮箱）</span><span class="lang-en">Upload key (no email needed)</span></td>
+                        <td><span class="lang-zh">手机 App 拍照、录像、语音备注、拍票据并上传</span><span class="lang-en">Shoot photos, video, voice notes, receipts from the app</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">客户（业主）</span><span class="lang-en">Client</span></td>
+                        <td><span class="lang-zh">邮箱 + 密码</span><span class="lang-en">Email + password</span></td>
+                        <td><span class="lang-zh">只能看到经理标记为"客户可见"的照片——默认什么都看不到</span><span class="lang-en">Sees only photos a manager marked client-visible — nothing by default</span></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="install"><span class="lang-zh">2. 安装与首次启动</span><span class="lang-en">2. Install &amp; first run</span></h2>
+                <p>
+                    <span class="lang-zh">使用我们托管的云端工作区可跳过本节（从<a href="/register">申请开通</a>开始）。本节针对自建部署。</span>
+                    <span class="lang-en">Skip this section if you use our hosted workspace (start at <a href="/register">Request access</a>). This is for self-hosting.</span>
+                </p>
+                <h3><span class="lang-zh">2.1 TerraMaster NAS（TOS 7 应用中心）</span><span class="lang-en">2.1 TerraMaster NAS (TOS 7 App Center)</span></h3>
+                <ol>
+                    <li><span class="lang-zh">在应用中心搜索 <strong>KK Field Logger</strong>，点击安装，选择存放数据的存储卷。</span><span class="lang-en">Search <strong>KK Field Logger</strong> in the App Center, install, pick the storage volume for its data.</span></li>
+                    <li><span class="lang-zh">等待容器启动（首次启动要初始化数据库，约 1–3 分钟）。</span><span class="lang-en">Wait for the containers to start (first boot initializes the database, 1–3 minutes).</span></li>
+                    <li><span class="lang-zh">打开应用（默认端口 <code>8090</code>），进入<strong>初始化向导</strong>：填公司名、管理员邮箱和密码，一步建好工作区。</span><span class="lang-en">Open the app (default port <code>8090</code>) and complete the <strong>setup wizard</strong>: company name, admin email, password — one step.</span></li>
+                </ol>
+                <div class="tip">
+                    <span class="lang-zh"><strong>配置要求</strong>：x86 机型开箱即用；ARM 机型需要 <strong>2GB 及以上内存</strong>（1GB 内存机型不支持）。数据存放在所选卷的 <code>DockerAppData/kkfieldlogger/</code> 下：<code>media</code>（照片视频）、<code>database</code>、<code>backups</code>、<code>logs</code>、<code>config</code>。</span>
+                    <span class="lang-en"><strong>Requirements</strong>: x86 models work out of the box; ARM models need <strong>2GB+ RAM</strong> (1GB models are not supported). Data lives under <code>DockerAppData/kkfieldlogger/</code> on the chosen volume: <code>media</code>, <code>database</code>, <code>backups</code>, <code>logs</code>, <code>config</code>.</span>
+                </div>
+                <h3><span class="lang-zh">2.2 任何支持 Docker 的设备</span><span class="lang-en">2.2 Any Docker-capable device</span></h3>
+                <p>
+                    <span class="lang-zh">同一套镜像适用于其他 NAS、软路由或普通服务器。到 <a href="https://github.com/kkkdata/kkfieldlogger" rel="noopener">GitHub 仓库</a>取 <code>deploy/nas/docker-compose.yml</code>，把 <code>/Volume*/DockerAppData</code> 换成本机路径后：</span>
+                    <span class="lang-en">The same images run on other NASes, soft routers, or plain servers. Grab <code>deploy/nas/docker-compose.yml</code> from the <a href="https://github.com/kkkdata/kkfieldlogger" rel="noopener">GitHub repo</a>, replace <code>/Volume*/DockerAppData</code> with local paths, then:</span>
+                </p>
+                <pre>docker compose up -d
+# 首次启动自动执行全部数据库迁移 / first boot runs all migrations
+# 然后访问 http://&lt;主机&gt;:8090 完成向导 / then visit http://&lt;host&gt;:8090</pre>
+                <p>
+                    <span class="lang-zh">镜像为 <code>kkkdata/kkfieldlogger</code>，同一 tag 同时支持 <code>amd64</code> 与 <code>arm64</code>。标准版即够用；<code>-full</code> 变体额外内置语音转写与视频关键帧提取（体积更大，建议 x86 使用）。</span>
+                    <span class="lang-en">Images: <code>kkkdata/kkfieldlogger</code>; each tag serves both <code>amd64</code> and <code>arm64</code>. The standard variant is enough for most; the <code>-full</code> variant adds in-image voice transcription and video keyframes (bigger; best on x86).</span>
+                </p>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="rollout"><span class="lang-zh">3. 快速上手三步</span><span class="lang-en">3. Quick start</span></h2>
+                <ol>
+                    <li><span class="lang-zh"><strong>建项目</strong>：后台「项目」页新建项目（工地）。</span><span class="lang-en"><strong>Create a project</strong> on the Projects page (one per jobsite).</span></li>
+                    <li><span class="lang-zh"><strong>加员工、发密钥</strong>：「员工」页添加工人并分配项目；系统为每人生成一个<strong>上传密钥</strong>，把密钥发给工人即可，无需为工人开邮箱账号。</span><span class="lang-en"><strong>Add employees, issue keys</strong>: add workers on the Employees page and assign projects; each gets an <strong>upload key</strong>. Hand the key to the worker — no email account needed.</span></li>
+                    <li><span class="lang-zh"><strong>工人装 App 开拍</strong>：工人在手机装好 App、录入密钥，到工地即拍即传；照片几秒后出现在后台。</span><span class="lang-en"><strong>Workers install the app</strong>, enter their key, and shoot; uploads appear in the portal within seconds.</span></li>
+                </ol>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="field"><span class="lang-zh">4. 工人端：手机 App</span><span class="lang-en">4. Field: the mobile app</span></h2>
+                <ul>
+                    <li><span class="lang-zh"><strong>登录</strong>：首次打开输入服务器地址（NAS 部署时）和上传密钥即可，之后保持登录。</span><span class="lang-en"><strong>Sign in</strong>: on first launch enter the server address (for NAS installs) and the upload key; it stays signed in.</span></li>
+                    <li><span class="lang-zh"><strong>拍摄</strong>：支持照片、视频、语音备注、票据。选定项目后拍摄，记录自动带上项目、工号、GPS 与时间。</span><span class="lang-en"><strong>Capture</strong>: photos, video, voice notes, receipts. Pick the project and shoot; each record carries project, employee, GPS, and time.</span></li>
+                    <li><span class="lang-zh"><strong>离线队列</strong>：没信号照拍不误——记录先存本机，网络恢复后自动补传，重复上传自动去重（同一张照片不会传两份）。</span><span class="lang-en"><strong>Offline queue</strong>: no signal, no problem — records queue locally and upload when coverage returns; duplicate uploads are deduplicated automatically.</span></li>
+                    <li><span class="lang-zh"><strong>报错提示</strong>：所有错误均为结构化提示，支持英文、中文、西班牙语，并注明是否可重试。</span><span class="lang-en"><strong>Errors</strong> are structured and localized (EN/中文/Español) and say whether a retry will help.</span></li>
+                </ul>
+                <div class="tip">
+                    <span class="lang-zh">工人被误分到错误项目也不丢数据：服务器会把照片挂到可用项目并记录原始项目信息，经理后续可改。</span>
+                    <span class="lang-en">Wrong project assignment never loses data: the server files the photo under an available project and records the original intent for managers to fix later.</span>
+                </div>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="portal"><span class="lang-zh">5. 经理后台逐页说明</span><span class="lang-en">5. Manager portal, page by page</span></h2>
+                <p>
+                    <span class="lang-zh">浏览器访问 <code>/login</code> 登录。界面语言可在「语言」菜单切换（中文/英文）。</span>
+                    <span class="lang-en">Sign in at <code>/login</code>. Interface language (中文/English) switches from the Language menu.</span>
+                </p>
+                <h3><span class="lang-zh">5.1 今日工作台（登录首页）</span><span class="lang-en">5.1 Today workbench (landing page)</span></h3>
+                <p>
+                    <span class="lang-zh">回答一个问题：<strong>今天有什么需要我处理？</strong>集中显示今日上传动态、异常告警（任务队列积压、处理失败）、待办入口。想用旧版总览，点「经典视图」。</span>
+                    <span class="lang-en">It answers one question: <strong>what needs my attention today?</strong> Today's upload activity, alerts (queue backlog, failed processing), and shortcuts. The classic dashboard is one click away.</span>
+                </p>
+                <h3><span class="lang-zh">5.2 照片库</span><span class="lang-en">5.2 Photo library</span></h3>
+                <ul>
+                    <li><span class="lang-zh"><strong>筛选</strong>：按项目、员工、日期、审核状态过滤；支持网格（图库）和<strong>地图视图</strong>（按 GPS 落点看照片分布）。</span><span class="lang-en"><strong>Filter</strong> by project, employee, date, review status; grid (gallery) and a <strong>map view</strong> plotting photos by GPS.</span></li>
+                    <li><span class="lang-zh"><strong>单张操作</strong>：批注、评论、审批（通过/驳回）、设为客户可见、重新触发 AI 分析。</span><span class="lang-en"><strong>Per-photo</strong>: annotate, comment, approve/reject, mark client-visible, re-run AI analysis.</span></li>
+                    <li><span class="lang-zh"><strong>批量操作</strong>：勾选多张后可批量批注、批量审核、批量删除。</span><span class="lang-en"><strong>Bulk actions</strong>: select many, then bulk-annotate, bulk-review, or bulk-delete.</span></li>
+                    <li><span class="lang-zh"><strong>回收站</strong>：删除先进回收站，可随时恢复；NAS 版 30 天后自动清理，也可手动清空。彻底销毁不可恢复。</span><span class="lang-en"><strong>Recycle bin</strong>: deletes go to the bin and can be restored; the NAS edition auto-purges after 30 days, or empty it manually. Destroy is permanent.</span></li>
+                    <li><span class="lang-zh"><strong>客户可见性</strong>：客户账号默认看不到任何照片，只有明确标记的才会出现——先审后见。</span><span class="lang-en"><strong>Client visibility</strong>: client accounts see nothing until a photo is explicitly marked visible — curation first.</span></li>
+                </ul>
+                <h3><span class="lang-zh">5.3 项目</span><span class="lang-en">5.3 Projects</span></h3>
+                <p>
+                    <span class="lang-zh">建项目、改名、看单项目照片汇总；「导出」可把项目资料打包带走。</span>
+                    <span class="lang-en">Create and edit projects, see per-project photo rollups; Export packs a project's records for hand-off.</span>
+                </p>
+                <h3><span class="lang-zh">5.4 员工与用户</span><span class="lang-en">5.4 Employees &amp; users</span></h3>
+                <ul>
+                    <li><span class="lang-zh"><strong>员工</strong>（工人）：添加、分配项目、停用/启用；上传密钥可<strong>重新生成</strong>（旧密钥立即失效，适用于手机丢失或人员离场）。</span><span class="lang-en"><strong>Employees</strong> (workers): add, assign projects, activate/deactivate; upload keys can be <strong>regenerated</strong> (the old key dies instantly — for lost phones or departures).</span></li>
+                    <li><span class="lang-zh"><strong>用户</strong>（后台账号）：管理员可调整角色、重置密码、停用账号。</span><span class="lang-en"><strong>Users</strong> (portal accounts): admins change roles, reset passwords, deactivate.</span></li>
+                </ul>
+                <h3><span class="lang-zh">5.5 报告</span><span class="lang-en">5.5 Reports</span></h3>
+                <p>
+                    <span class="lang-zh">按项目和日期范围生成 PDF 报告，可下载存档；还有<strong>进度对比</strong>视图（同一项目不同时间段的对照）。生成失败可一键重试。</span>
+                    <span class="lang-en">Generate PDF reports by project and date range, download for filing; a <strong>progress-compare</strong> view sets two periods of the same project side by side. Failed generations retry with one click.</span>
+                </p>
+                <h3><span class="lang-zh">5.6 IP 摄像头</span><span class="lang-en">5.6 IP cameras</span></h3>
+                <p>
+                    <span class="lang-zh">可接入工地固定 IP 摄像头做定时抓拍，支持连通性测试与健康状态总览，也可批量添加。</span>
+                    <span class="lang-en">Fixed jobsite IP cameras can be added (individually or in bulk) for scheduled captures, with connectivity tests and a health summary.</span>
+                </p>
+                <h3><span class="lang-zh">5.7 审计日志与系统健康</span><span class="lang-en">5.7 Audit log &amp; system health</span></h3>
+                <p>
+                    <span class="lang-zh">每一次审批、删除、密钥变更等敏感操作都记录在审计日志里，谁在何时做了什么，随时可查。「系统健康」页显示队列、存储和后台任务状态。</span>
+                    <span class="lang-en">Every approval, deletion, and key change lands in the audit log — who did what, when. The System Health page shows queue, storage, and worker status.</span>
+                </p>
+                <h3><span class="lang-zh">5.8 设置与个人资料</span><span class="lang-en">5.8 Settings &amp; profile</span></h3>
+                <p>
+                    <span class="lang-zh">「设置」管工作区级选项；「个人资料」改自己的密码。</span>
+                    <span class="lang-en">Settings holds workspace-level options; Profile is where you change your own password.</span>
+                </p>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="ai"><span class="lang-zh">6. AI 助手</span><span class="lang-en">6. AI assist</span></h2>
+                <ul>
+                    <li><span class="lang-zh"><strong>AI 后端</strong>：在「AI 后端」页接入您自己的视觉模型服务（如本地 Ollama 或云端 API），保存前可先「测试连接」。不配置 AI 系统也完全可用。</span><span class="lang-en"><strong>AI backends</strong>: connect your own vision-model service (local Ollama, or a cloud API) on the AI Backends page; test the connection before saving. The system is fully usable without AI.</span></li>
+                    <li><span class="lang-zh"><strong>AI 中心</strong>：查看分析任务队列与结果，失败任务可重试；分析结果（摘要、标签）可<strong>采纳</strong>进正式记录，采纳错了可<strong>回滚</strong>。</span><span class="lang-en"><strong>AI Center</strong>: watch the analysis queue, retry failures; results (summaries, tags) are <strong>promoted</strong> into the record explicitly and can be <strong>rolled back</strong>.</span></li>
+                    <li><span class="lang-zh"><strong>原则</strong>：未经验证的 AI 输出不会自动进入报告或客户可见内容——AI 只做助手，不做裁判。</span><span class="lang-en"><strong>Principle</strong>: unverified AI output never flows into reports or client-visible content on its own — AI assists, it doesn't decide.</span></li>
+                </ul>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="maintenance"><span class="lang-zh">7. 备份、保留与升级</span><span class="lang-en">7. Backups, retention &amp; upgrades</span></h2>
+                <h3><span class="lang-zh">7.1 备份</span><span class="lang-en">7.1 Backups</span></h3>
+                <p>
+                    <span class="lang-zh">每次升级如包含数据库结构变更，系统会<strong>先自动做一次数据库备份</strong>再执行迁移，保留最近 5 份，存放在数据卷的 <code>backups/</code> 目录。建议另外定期把整个 <code>DockerAppData/kkfieldlogger/</code> 目录（含 <code>media</code> 与 <code>database</code>）纳入您的 NAS 备份计划。</span>
+                    <span class="lang-en">Whenever an upgrade carries database schema changes, the system takes an <strong>automatic database backup first</strong>, keeping the latest five in the data volume's <code>backups/</code> directory. Additionally, include the whole <code>DockerAppData/kkfieldlogger/</code> tree (with <code>media</code> and <code>database</code>) in your NAS backup plan.</span>
+                </p>
+                <h3><span class="lang-zh">7.2 自动保留策略（磁盘保护）</span><span class="lang-en">7.2 Retention (disk protection)</span></h3>
+                <table>
+                    <tr><th><span class="lang-zh">数据</span><span class="lang-en">Data</span></th><th><span class="lang-zh">策略</span><span class="lang-en">Policy</span></th></tr>
+                    <tr><td><span class="lang-zh">回收站照片</span><span class="lang-en">Recycled photos</span></td><td><span class="lang-zh">30 天后自动清理（NAS 版）</span><span class="lang-en">Auto-purged after 30 days (NAS edition)</span></td></tr>
+                    <tr><td><span class="lang-zh">被新结果取代的 AI 分析日志</span><span class="lang-en">Superseded AI analysis logs</span></td><td><span class="lang-zh">保留 180 天</span><span class="lang-en">Kept 180 days</span></td></tr>
+                    <tr><td><span class="lang-zh">审计日志</span><span class="lang-en">Audit logs</span></td><td><span class="lang-zh">保留 365 天</span><span class="lang-en">Kept 365 days</span></td></tr>
+                    <tr><td><span class="lang-zh">已完成的后台任务记录</span><span class="lang-en">Completed job records</span></td><td><span class="lang-zh">保留 30 天</span><span class="lang-en">Kept 30 days</span></td></tr>
+                </table>
+                <p>
+                    <span class="lang-zh">照片和视频本体<strong>永不自动删除</strong>——只有回收站里的会过期。</span>
+                    <span class="lang-en">Original photos and videos are <strong>never auto-deleted</strong> — only items already in the recycle bin expire.</span>
+                </p>
+                <h3><span class="lang-zh">7.3 升级</span><span class="lang-en">7.3 Upgrades</span></h3>
+                <p>
+                    <span class="lang-zh">应用中心内点击更新即可；自建 Docker 部署执行 <code>docker compose pull &amp;&amp; docker compose up -d</code>。数据库迁移在启动时自动完成（升级前自动备份见 7.1）。</span>
+                    <span class="lang-en">Click update in the App Center; plain Docker installs run <code>docker compose pull &amp;&amp; docker compose up -d</code>. Migrations apply automatically on boot (with the pre-upgrade backup from 7.1).</span>
+                </p>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="troubleshooting"><span class="lang-zh">8. 故障排查</span><span class="lang-en">8. Troubleshooting</span></h2>
+                <table>
+                    <tr><th><span class="lang-zh">现象</span><span class="lang-en">Symptom</span></th><th><span class="lang-zh">处理</span><span class="lang-en">What to do</span></th></tr>
+                    <tr>
+                        <td><span class="lang-zh">登录连续失败后被暂时锁定</span><span class="lang-en">Login temporarily locked after repeated failures</span></td>
+                        <td><span class="lang-zh">防暴力破解保护，等 10 分钟再试；忘记密码请管理员在「用户」页重置</span><span class="lang-en">Brute-force protection; wait 10 minutes. Forgot your password? An admin resets it on the Users page</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">首次启动打不开页面</span><span class="lang-en">Page won't open on first boot</span></td>
+                        <td><span class="lang-zh">数据库初始化中，等 1–3 分钟（ARM 机型更久）；仍不行看容器日志</span><span class="lang-en">Database initializing — allow 1–3 minutes (longer on ARM); then check container logs</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">App 提示上传失败</span><span class="lang-en">App reports upload failure</span></td>
+                        <td><span class="lang-zh">看提示是否"可重试"：网络问题会自动补传；密钥失效需经理重发密钥</span><span class="lang-en">Check whether the error says retryable: network issues auto-retry; a revoked key needs a manager to reissue it</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">照片传上来但 AI 一直不出结果</span><span class="lang-en">Photos arrive but AI results never do</span></td>
+                        <td><span class="lang-zh">「AI 后端」页测试连接；「AI 中心」看失败任务并重试；「系统健康」查队列积压</span><span class="lang-en">Test the backend connection, retry failed tasks in AI Center, check queue backlog on System Health</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">端口 8090 被占用（自建部署）</span><span class="lang-en">Port 8090 already taken (self-hosted)</span></td>
+                        <td><span class="lang-zh">改 compose 里的 <code>8090:8000</code> 左侧端口后重启</span><span class="lang-en">Change the left side of <code>8090:8000</code> in the compose file and restart</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="lang-zh">需要日志定位问题</span><span class="lang-en">Need logs to dig in</span></td>
+                        <td><span class="lang-zh">数据卷 <code>logs/</code> 目录，或 <code>docker logs kkfieldlogger</code>（后台服务名 <code>kkfieldlogger-worker</code>、数据库 <code>kkfieldlogger-db</code>）</span><span class="lang-en">The data volume's <code>logs/</code> directory, or <code>docker logs kkfieldlogger</code> (worker: <code>kkfieldlogger-worker</code>, db: <code>kkfieldlogger-db</code>)</span></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="plain-card">
+                <h2 id="support"><span class="lang-zh">9. 获取帮助</span><span class="lang-en">9. Getting help</span></h2>
+                <p>
+                    <span class="lang-zh">测试版反馈与支持：<a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>，或 GitHub 仓库 <a href="https://github.com/kkkdata/kkfieldlogger/issues" rel="noopener">提交 Issue</a>。来信请附版本号（页面底部可见）与问题截图，定位更快。</span>
+                    <span class="lang-en">Beta feedback and support: <a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>, or <a href="https://github.com/kkkdata/kkfieldlogger/issues" rel="noopener">open a GitHub issue</a>. Include your version (shown in the page footer) and a screenshot — it speeds things up.</span>
+                </p>
             </section>
         </main>
         <footer class="public-footer">
@@ -72,7 +300,7 @@
                 document.body.setAttribute("data-lang", next);
                 document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
                 document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
-                document.title = next === "zh" ? "使用流程 | KK Field Logger" : "Guide | KK Field Logger";
+                document.title = next === "zh" ? "使用说明书 | KK Field Logger" : "User Manual | KK Field Logger";
                 try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
                 if (window.kkOnLangChange) { window.kkOnLangChange(next); }
             }
