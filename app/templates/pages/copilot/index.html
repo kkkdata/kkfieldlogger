@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.copilot-layout {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 1rem;
+    min-height: calc(100vh - 220px);
+}
+.copilot-sidebar,
+.copilot-main {
+    min-width: 0;
+}
+.copilot-sidebar {
+    position: sticky;
+    top: 120px;
+    align-self: start;
+}
+.copilot-sidebar .panel,
+.copilot-main .panel {
+    height: 100%;
+}
+.copilot-controls {
+    display: grid;
+    gap: 0.85rem;
+}
+.copilot-conversation-list {
+    display: grid;
+    gap: 0.65rem;
+    max-height: 58vh;
+    overflow-y: auto;
+}
+.copilot-conversation-item {
+    border: 1px solid #d6dfec;
+    border-radius: 18px;
+    padding: 0.9rem 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    cursor: pointer;
+    display: grid;
+    gap: 0.35rem;
+    box-shadow: 0 12px 24px rgba(16, 36, 61, 0.04);
+}
+.copilot-conversation-item.is-active {
+    border-color: #173a63;
+    box-shadow: 0 0 0 2px rgba(23, 58, 99, 0.08);
+}
+.copilot-thread {
+    display: grid;
+    gap: 0.9rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0.2rem 0.35rem 0.2rem 0.05rem;
+}
+.copilot-message {
+    border: 1px solid #d6dfec;
+    border-radius: 20px;
+    padding: 1rem 1.05rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    display: grid;
+    gap: 0.7rem;
+    box-shadow: 0 14px 28px rgba(16, 36, 61, 0.05);
+}
+.copilot-message-user {
+    background: linear-gradient(180deg, #eef4fb 0%, #e9f1fb 100%);
+    border-color: #cddbf0;
+}
+.copilot-message-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+.copilot-message-role {
+    font-weight: 700;
+    color: #173a63;
+}
+.copilot-message-body {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: #172033;
+}
+.copilot-source-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+.copilot-source-card {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #f9fbff;
+    display: grid;
+    box-shadow: 0 12px 24px rgba(16, 36, 61, 0.05);
+}
+.copilot-source-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    background: #eef3fb;
+}
+.copilot-source-body {
+    padding: 0.8rem 0.9rem;
+    display: grid;
+    gap: 0.35rem;
+}
+.copilot-compose {
+    display: grid;
+    gap: 0.8rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid #e3eaf4;
+}
+.copilot-compose textarea {
+    min-height: 120px;
+    background: #fcfdff;
+}
+.copilot-quick-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+.copilot-quick-chip {
+    border: 1px solid #cddbf0;
+    background: #eef4fb;
+    color: #173a63;
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(16, 36, 61, 0.05);
+}
+.copilot-quick-chip:hover {
+    transform: translateY(-1px);
+}
+@media (max-width: 960px) {
+    .copilot-layout {
+        grid-template-columns: 1fr;
+    }
+    .copilot-sidebar {
+        position: static;
+    }
+}
+</style>
+<div class="page-stack">
+<section class="panel hero-panel">
+    <div class="hero-copy">
+        <div class="section-eyebrow">{{ t("page_copilot") }}</div>
+        <h2>{{ t("copilot_title") }}</h2>
+        <div class="section-subtitle">{{ t("copilot_copy") }}</div>
+    </div>
+</section>
+
+<section class="copilot-layout">
+    <div class="copilot-sidebar">
+        <article class="panel">
+            <div class="panel-header">
+                <h3>{{ t("copilot_new_conversation") }}</h3>
+            </div>
+            <div class="copilot-controls">
+                <label>
+                    {{ t("copilot_project_scope") }}
+                    <select id="copilot-project-select">
+                        <option value="">{{ t("field_all_projects") }}</option>
+                        {% for project in accessible_projects %}
+                        <option value="{{ project.project_id }}">{{ project.project_name }} ({{ project.project_id }})</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    {{ t("copilot_backend_label") }}
+                    <select id="copilot-backend-select">
+                        <option value="">Auto</option>
+                        {% for backend in copilot_backend_options %}
+                        <option value="{{ backend.id }}">{{ backend.label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    {{ t("copilot_mode_label") }}
+                    <select id="copilot-mode-select">
+                        <option value="standard">{{ t("copilot_mode_standard") }}</option>
+                        <option value="deep">{{ t("copilot_mode_deep") }}</option>
+                        <option value="executive">{{ t("copilot_mode_executive") }}</option>
+                    </select>
+                </label>
+                <button type="button" class="btn btn-primary" id="copilot-create-button">{{ t("copilot_new_conversation") }}</button>
+            </div>
+            <hr>
+            <div class="panel-header">
+                <h3>{{ t("nav_copilot") }}</h3>
+            </div>
+            <div class="copilot-conversation-list" id="copilot-conversation-list"></div>
+        </article>
+    </div>
+
+    <div class="copilot-main">
+        <article class="panel" style="display:grid; gap:1rem;">
+            <div class="copilot-quick-grid">
+                {% for prompt in copilot_starter_questions %}
+                <button type="button" class="copilot-quick-chip" data-quick-prompt="{{ prompt }}">{{ prompt }}</button>
+                {% endfor %}
+            </div>
+            <div class="copilot-thread" id="copilot-thread">
+                <article class="copilot-message">
+                    <div class="copilot-message-role">{{ t("copilot_empty") }}</div>
+                </article>
+            </div>
+            <div class="copilot-compose">
+                <label for="copilot-question">{{ t("copilot_question_label") }}</label>
+                <textarea id="copilot-question" placeholder="{{ t('copilot_question_placeholder') }}"></textarea>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" id="copilot-send-button">{{ t("copilot_send") }}</button>
+                </div>
+            </div>
+        </article>
+    </div>
+</section>
+</div>
+
+<script>
+(() => {
+    const conversationList = document.getElementById("copilot-conversation-list");
+    const thread = document.getElementById("copilot-thread");
+    const questionInput = document.getElementById("copilot-question");
+    const createButton = document.getElementById("copilot-create-button");
+    const sendButton = document.getElementById("copilot-send-button");
+    const projectSelect = document.getElementById("copilot-project-select");
+    const backendSelect = document.getElementById("copilot-backend-select");
+    const modeSelect = document.getElementById("copilot-mode-select");
+    const seedConversations = {{ copilot_conversations | tojson }};
+    const labels = {
+        thinking: {{ t("copilot_thinking") | tojson }},
+        error: {{ t("copilot_error") | tojson }},
+        user: "User",
+        assistant: "AI Copilot",
+        sources: {{ t("copilot_sources") | tojson }},
+        empty: {{ t("copilot_empty") | tojson }},
+    };
+
+    let activeConversationId = null;
+    let pollTimer = null;
+
+    const escapeHtml = (value) => {
+        return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    };
+
+    const normalizeEvidenceUrl = (value) => {
+        if (!value) {
+            return "";
+        }
+        try {
+            const parsed = new URL(value, window.location.origin);
+            const localHosts = new Set(["127.0.0.1", "localhost", "0.0.0.0"]);
+            if (localHosts.has(parsed.hostname)) {
+                return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+            }
+            if (parsed.protocol === "http:" && parsed.hostname === window.location.hostname) {
+                parsed.protocol = window.location.protocol;
+            }
+            return parsed.toString();
+        } catch (error) {
+            return value;
+        }
+    };
+
+    const renderConversationList = (items) => {
+        if (!items.length) {
+            conversationList.innerHTML = `<article class="copilot-message"><div class="muted">${escapeHtml(labels.empty)}</div></article>`;
+            return;
+        }
+        conversationList.innerHTML = items.map((item) => `
+            <article class="copilot-conversation-item ${item.id === activeConversationId ? "is-active" : ""}" data-conversation-id="${item.id}">
+                <strong>${escapeHtml(item.title)}</strong>
+                <div class="muted small">${escapeHtml(item.latest_message_excerpt || "")}</div>
+                <div class="muted small">${escapeHtml(item.updated_at || "")}</div>
+            </article>
+        `).join("");
+        conversationList.querySelectorAll("[data-conversation-id]").forEach((element) => {
+            element.addEventListener("click", () => loadConversation(element.dataset.conversationId));
+        });
+    };
+
+    const renderSources = (sources) => {
+        if (!sources || !sources.length) return "";
+        return `
+            <div>
+                <div class="muted small" style="margin-bottom:0.5rem;">${escapeHtml(labels.sources)}</div>
+                <div class="copilot-source-grid">
+                    ${sources.map((source) => {
+                        const thumbUrl = normalizeEvidenceUrl(source.metadata_json && source.metadata_json.thumb_url);
+                        const sourceUrl = normalizeEvidenceUrl(source.source_url);
+                        return `
+                        <article class="copilot-source-card">
+                            ${thumbUrl ? `<img src="${escapeHtml(thumbUrl)}" alt="">` : ""}
+                            <div class="copilot-source-body">
+                                <strong>${escapeHtml(source.source_title || source.source_type)}</strong>
+                                <div class="muted small">${escapeHtml((source.metadata_json && source.metadata_json.captured_at_utc) || "")}</div>
+                                ${sourceUrl ? `<a class="btn btn-secondary btn-small" href="${escapeHtml(sourceUrl)}">Open</a>` : ""}
+                            </div>
+                        </article>
+                    `;}).join("")}
+                </div>
+            </div>
+        `;
+    };
+
+    const renderThread = (messages) => {
+        if (!messages.length) {
+            thread.innerHTML = `<article class="copilot-message"><div class="muted">${escapeHtml(labels.empty)}</div></article>`;
+            return;
+        }
+        thread.innerHTML = messages.map((message) => `
+            <article class="copilot-message ${message.role === "user" ? "copilot-message-user" : ""}">
+                <div class="copilot-message-header">
+                    <span class="copilot-message-role">${message.role === "user" ? labels.user : labels.assistant}</span>
+                    <span class="muted small">${escapeHtml(message.status || "")}</span>
+                </div>
+                <div class="copilot-message-body">${escapeHtml(message.content_text || (message.status === "processing" ? labels.thinking : ""))}</div>
+                ${renderSources(message.sources || [])}
+            </article>
+        `).join("");
+        thread.scrollTop = thread.scrollHeight;
+    };
+
+    const refreshConversationList = async () => {
+        const projectId = projectSelect.value;
+        const url = projectId ? `/api/v2/copilot/conversations?project_id=${encodeURIComponent(projectId)}` : "/api/v2/copilot/conversations";
+        const response = await fetch(url, { credentials: "same-origin" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        renderConversationList(payload.items || []);
+    };
+
+    const schedulePoll = (messages) => {
+        if (pollTimer) window.clearTimeout(pollTimer);
+        const pending = (messages || []).find((item) => item.role === "assistant" && (item.status === "pending" || item.status === "processing"));
+        if (!pending || !activeConversationId) return;
+        pollTimer = window.setTimeout(() => loadConversation(activeConversationId), 3000);
+    };
+
+    const loadConversation = async (conversationId) => {
+        activeConversationId = conversationId;
+        await refreshConversationList();
+        const response = await fetch(`/api/v2/copilot/conversations/${conversationId}`, { credentials: "same-origin" });
+        if (!response.ok) {
+            thread.innerHTML = `<article class="copilot-message"><div class="muted">${escapeHtml(labels.error)}</div></article>`;
+            return;
+        }
+        const payload = await response.json();
+        renderThread(payload.messages || []);
+        schedulePoll(payload.messages || []);
+    };
+
+    const ensureConversation = async () => {
+        if (activeConversationId) return activeConversationId;
+        const response = await fetch("/api/v2/copilot/conversations", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                project_id: projectSelect.value || null,
+                preferred_backend_id: backendSelect.value || null,
+                preferred_mode: modeSelect.value || "standard",
+            }),
+        });
+        if (!response.ok) throw new Error("create_failed");
+        const payload = await response.json();
+        activeConversationId = payload.conversation.id;
+        await refreshConversationList();
+        return activeConversationId;
+    };
+
+    createButton.addEventListener("click", async () => {
+        activeConversationId = null;
+        await ensureConversation();
+        await loadConversation(activeConversationId);
+    });
+
+    sendButton.addEventListener("click", async () => {
+        const contentText = questionInput.value.trim();
+        if (!contentText) return;
+        const conversationId = await ensureConversation();
+        const response = await fetch(`/api/v2/copilot/conversations/${conversationId}/messages`, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                content_text: contentText,
+                language: {{ current_language | tojson }},
+                preferred_backend_id: backendSelect.value || null,
+                preferred_mode: modeSelect.value || "standard",
+            }),
+        });
+        if (!response.ok) {
+            thread.innerHTML = `<article class="copilot-message"><div class="muted">${escapeHtml(labels.error)}</div></article>`;
+            return;
+        }
+        questionInput.value = "";
+        await loadConversation(conversationId);
+    });
+
+    document.querySelectorAll("[data-quick-prompt]").forEach((button) => {
+        button.addEventListener("click", () => {
+            questionInput.value = button.dataset.quickPrompt || "";
+            questionInput.focus();
+        });
+    });
+
+    projectSelect.addEventListener("change", async () => {
+        activeConversationId = null;
+        await refreshConversationList();
+        thread.innerHTML = `<article class="copilot-message"><div class="muted">${escapeHtml(labels.empty)}</div></article>`;
+    });
+
+    renderConversationList(seedConversations || []);
+    if (seedConversations && seedConversations.length) {
+        loadConversation(seedConversations[0].id);
+    }
+})();
+</script>
+{% endblock %}

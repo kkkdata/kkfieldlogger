@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel-grid panel-grid-single">
+    <section class="panel">
+        <div class="panel-header">
+            <h2>{{ t("invoices_title") }}</h2>
+        </div>
+        <form method="get" class="form-grid">
+            <label>{{ t("field_project") }}
+                <select name="project_id">
+                    <option value="">{{ t("field_all_projects") }}</option>
+                    {% for project in projects %}
+                    <option value="{{ project.project_id }}" {% if filters.project_id == project.project_id %}selected{% endif %}>{{ project.project_id }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>{{ t("field_employee") }}
+                <select name="employee_id">
+                    <option value="">{{ t("field_all_employees") }}</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.employee_id }}" {% if filters.employee_id == employee.employee_id %}selected{% endif %}>{{ employee.employee_id }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>{{ t("field_start_date") }}
+                <input type="date" name="start_date" value="{{ filters.start_date }}">
+            </label>
+            <label>{{ t("field_end_date") }}
+                <input type="date" name="end_date" value="{{ filters.end_date }}">
+            </label>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">{{ t("btn_apply_filters") }}</button>
+                <a class="btn btn-secondary" href="/portal/invoices">{{ t("btn_reset") }}</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+<section class="card-grid">
+    {% for photo in invoices %}
+    <article class="photo-card">
+        <img
+            src="{{ photo.thumb_url or photo.image_url }}"
+            alt="{{ photo.original_file_name }}"
+            class="photo-thumb"
+            data-image-src="{{ photo.image_url }}"
+            data-image-title="{{ photo.original_file_name }}"
+            data-image-info="{{ t('field_employee') }} {{ photo.employee_id }} | {{ photo.captured_at_utc|local_dt(timezone_name) }}"
+        >
+        <div class="photo-body">
+            <div class="tag-row">
+                <span class="tag">{{ t("page_invoices") }}</span>
+                <span class="tag">{{ photo.employee_id }}</span>
+                {% if photo.project_id %}<span class="tag">{{ photo.project_id }}</span>{% endif %}
+            </div>
+            <div class="photo-meta">
+                <div><strong>{{ photo.original_file_name }}</strong></div>
+                <div>{{ t("meta_captured", value=photo.captured_at_utc|local_dt(timezone_name)) }}</div>
+                <div>{{ t("meta_location", value=photo.location or t("meta_none")) }}</div>
+            </div>
+            <form method="post" action="/portal/photos/{{ photo.id }}/delete">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                <button type="submit" class="btn btn-danger full-width">{{ t("btn_soft_delete") }}</button>
+            </form>
+        </div>
+    </article>
+    {% else %}
+    <article class="panel empty">{{ t("empty_no_invoices") }}</article>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_employees") }}</div>
+            <h2>{{ t("employees_title") }}</h2>
+            <p class="section-subtitle">{{ t("employees_workspace_copy") }}</p>
+        </div>
+    </section>
+
+    {% if can_create_employees %}
+    <section class="split-shell split-shell-single">
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("employees_create") }}</div>
+                    <h2>{{ t("employees_create") }}</h2>
+                </div>
+            </div>
+            <form method="post" action="/portal/employees" class="form-grid form-shell employee-create-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label>{{ t("field_employee") }} ID
+                    <input type="text" name="employee_id" placeholder="12" required>
+                    <div class="muted small">{{ t("form_scoped_id_employee_hint", company_code=company_code or "10000", example=company_scoped_example or "100000001") }}</div>
+                </label>
+                <label>{{ t("field_name") }}
+                    <input type="text" name="name" required>
+                </label>
+                <label>{{ t("field_role") }}
+                    <input type="text" name="role_name" value="worker">
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_create") }}</button>
+                </div>
+            </form>
+        </article>
+    </section>
+    {% endif %}
+
+    <section class="panel table-panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("employees_title") }}</div>
+                <h2>{{ t("employees_title") }}</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ t("table_employee") }}</th>
+                        <th>{{ t("field_name") }}</th>
+                        <th>{{ t("table_role") }}</th>
+                        <th>{{ t("table_upload_scope") }}</th>
+                        <th>{{ t("table_api_key") }}</th>
+                        <th>{{ t("table_status") }}</th>
+                        <th>{{ t("table_actions") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td><strong>{{ employee.employee_id }}</strong></td>
+                        <td>{{ employee.name }}</td>
+                        <td>{{ employee.role }}</td>
+                        <td class="employee-upload-scope-cell">{{ t("employees_all_company_projects") }}</td>
+                        <td class="employee-api-key-cell">
+                            <code>{{ employee.api_key }}</code>
+                        </td>
+                        <td class="status-cell">{{ t("status_active") if employee.active else t("status_disabled") }}</td>
+                        <td class="table-actions-cell">
+                            {% if can_administer_employees %}
+                            <form method="post" action="/portal/employees/{{ employee.employee_id }}/toggle-active">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-secondary">{{ t("btn_toggle") }}</button>
+                            </form>
+                            <form method="post" action="/portal/employees/{{ employee.employee_id }}/regenerate-key">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger">{{ t("btn_rotate_key") }}</button>
+                            </form>
+                            <details class="inline-row-edit">
+                                <summary>{{ t("btn_edit_key") }}</summary>
+                                <form method="post" action="/portal/employees/{{ employee.employee_id }}/update-key" class="inline-edit-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="text" name="api_key" value="{{ employee.api_key }}" minlength="12" required>
+                                    <button type="submit" class="btn btn-secondary">{{ t("btn_save_key") }}</button>
+                                </form>
+                            </details>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="empty">{{ t("empty_no_employees") }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

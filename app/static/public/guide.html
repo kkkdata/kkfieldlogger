@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="KK Field Logger 使用流程。How KK Field Logger works.">
+    <title>使用流程 | KK Field Logger</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">使用流程</span><span class="lang-en">Guide</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+        <main class="plain-page">
+            <p class="eyebrow"><span class="lang-zh">使用流程</span><span class="lang-en">How it works</span></p>
+            <h1><span class="lang-zh">拍照、审核、归档，三步走。</span><span class="lang-en">Capture, review, file — three steps.</span></h1>
+            <p class="lead">
+                <span class="lang-zh">工作区开通后，管理员建项目、加员工、发上传密钥；之后现场和后台各干各的，记录自动汇合。</span><span class="lang-en">Once your workspace opens, admins set up projects, add employees, and issue upload keys. From there the field and the office each do their part; the records meet in the middle.</span>
+            </p>
+            <section class="plain-card">
+                <h2><span class="lang-zh">从零跑起来</span><span class="lang-en">Typical rollout</span></h2>
+                <ol>
+                    <li><span class="lang-zh">管理员创建项目和员工，发放上传密钥。</span><span class="lang-en">Admin creates projects and employees, issues upload keys.</span></li>
+                    <li><span class="lang-zh">工人装好 App、录入密钥，到工地就能拍。</span><span class="lang-en">Crews install the app, enter their key, and start shooting on site.</span></li>
+                    <li><span class="lang-zh">照片、视频、票据自动带上项目、工号、GPS 和时间上传。</span><span class="lang-en">Photos, video, and receipts upload with project, employee, GPS, and time attached.</span></li>
+                    <li><span class="lang-zh">经理在后台筛选、批注、审批，挑出能给业主看的照片。</span><span class="lang-en">Managers filter, annotate, approve, and pick what the client sees.</span></li>
+                    <li><span class="lang-zh">需要汇报时，从已审记录一键生成报告。</span><span class="lang-en">When it&#39;s time to report, build one from approved records in a click.</span></li>
+                </ol>
+            </section>
+        </main>
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            apply(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                apply(document.body.getAttribute("data-lang") === "zh" ? "en" : "zh");
+            });
+            function apply(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "使用流程 | KK Field Logger" : "Guide | KK Field Logger";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+                if (window.kkOnLangChange) { window.kkOnLangChange(next); }
+            }
+        })();
+    </script>
+</body>
+</html>

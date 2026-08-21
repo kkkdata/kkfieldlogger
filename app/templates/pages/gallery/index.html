@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>{{ t("gallery_title") }}</h2>
+    </div>
+    <form method="get" class="form-grid">
+        <label>{{ t("field_project") }}
+            <select name="project_id">
+                <option value="">{{ t("field_all_assigned_projects") }}</option>
+                {% for project in projects %}
+                <option value="{{ project.project_id }}" {% if selected_project == project.project_id %}selected{% endif %}>{{ project.project_id }} - {{ project.project_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_filter_gallery") }}</button>
+            <a class="btn btn-secondary" href="/portal/gallery">{{ t("btn_reset") }}</a>
+        </div>
+    </form>
+</section>
+
+<section class="card-grid">
+    {% for photo in photos %}
+    <article class="photo-card">
+        <img
+            src="{{ photo.thumb_url or photo.image_url }}"
+            alt="{{ photo.original_file_name }}"
+            class="photo-thumb"
+            data-image-src="{{ photo.image_url }}"
+            data-image-title="{{ photo.original_file_name }}"
+            data-image-info="{{ t('field_project') }} {{ photo.project_id }} | {{ photo.captured_at_utc|local_dt(timezone_name) }}"
+        >
+        <div class="photo-body">
+            <div class="tag-row">
+                <span class="tag">{{ photo.project_id }}</span>
+                <span class="tag">{{ photo.employee_id }}</span>
+                {% if photo.featured %}<span class="tag">{{ t("meta_featured") }}</span>{% endif %}
+            </div>
+            <div class="photo-meta">
+                <div><strong>{{ photo.original_file_name }}</strong></div>
+                <div>{{ photo.captured_at_utc|local_dt(timezone_name) }}</div>
+                <div>{{ photo.location or t("meta_none") }}</div>
+            </div>
+
+            <div class="comment-stack">
+                {% for comment in comments_by_photo.get(photo.id, []) %}
+                <div class="comment-card">
+                    <strong>{{ comment_users[comment.user_id].display_name if comment.user_id in comment_users else t("table_user") }}</strong>
+                    <div class="muted small">{{ comment.created_at|local_dt(timezone_name) }}</div>
+                    <div>{{ comment.comment }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if can_comment %}
+            <form method="post" action="/portal/photos/{{ photo.id }}/comments" class="form-stack">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                <label>{{ t("field_add_comment") }}
+                    <textarea name="comment" rows="2" placeholder="{{ t('field_feedback_placeholder') }}"></textarea>
+                </label>
+                <button type="submit" class="btn btn-secondary full-width">{{ t("btn_post_comment") }}</button>
+            </form>
+            {% endif %}
+
+            <a class="btn btn-secondary full-width" href="{{ photo.image_url }}" download>{{ t("btn_download_image") }}</a>
+        </div>
+    </article>
+    {% else %}
+    <article class="panel empty">{{ t("empty_no_gallery") }}</article>
+    {% endfor %}
+</section>
+{% endblock %}
+

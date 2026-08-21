@@ -1,0 +1,92 @@
+# KK Field Logger — TOS 7 App Center package compose file.
+# Rules per TOS 7 Application Development Guide ch.9 (see
+# docs/nas/tos7-packaging-plan.md). /Volume*/ is substituted by TOS with
+# the storage volume the user picks at install time.
+#
+# Images are published under the kkkdata Docker Hub account
+# (slim variant; the -full suffix adds in-image AI). Release flow:
+# scripts/release_nas.sh
+
+version: "3.8"
+
+services:
+  kkfieldlogger:
+    image: kkkdata/kkfieldlogger:0.9.0-beta.2
+    container_name: kkfieldlogger
+    restart: unless-stopped
+    user: "1000:1000"
+    depends_on:
+      kkfieldlogger-db:
+        condition: service_healthy
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - KK_DEPLOYMENT_PROFILE=private
+      - KK_APP_VERSION=0.9.0-beta.2
+      - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger:${KK_DB_PASSWORD:-kkfieldlogger-beta}@kkfieldlogger-db:5432/kkfieldlogger
+      - KK_MEDIA_ROOT=/data/media
+      - KK_LOG_DIR=/app/logs
+      - KK_SESSION_SECRET_FILE=/data/config/session_secret
+      - KK_BACKUP_DIR=/data/backups
+      - KK_RETENTION_RECYCLE_BIN_DAYS=30
+    volumes:
+      - /Volume*/DockerAppData/kkfieldlogger/media:/data/media
+      - /Volume*/DockerAppData/kkfieldlogger/logs:/app/logs
+      - /Volume*/DockerAppData/kkfieldlogger/config:/data/config
+      - /Volume*/DockerAppData/kkfieldlogger/backups:/data/backups
+    ports:
+      - "8090:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v2/healthz', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  kkfieldlogger-worker:
+    image: kkkdata/kkfieldlogger:0.9.0-beta.2
+    container_name: kkfieldlogger-worker
+    restart: unless-stopped
+    user: "1000:1000"
+    command: ["./docker/worker-entrypoint.sh"]
+    depends_on:
+      kkfieldlogger:
+        condition: service_healthy
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - KK_DEPLOYMENT_PROFILE=private
+      - KK_APP_VERSION=0.9.0-beta.2
+      - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger:${KK_DB_PASSWORD:-kkfieldlogger-beta}@kkfieldlogger-db:5432/kkfieldlogger
+      - KK_MEDIA_ROOT=/data/media
+      - KK_LOG_DIR=/app/logs
+      - KK_RETENTION_RECYCLE_BIN_DAYS=30
+    volumes:
+      - /Volume*/DockerAppData/kkfieldlogger/media:/data/media
+      - /Volume*/DockerAppData/kkfieldlogger/logs:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os,time,sys; sys.exit(0 if time.time()-os.path.getmtime('/tmp/kk-worker-heartbeat')<90 else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 320s
+
+  kkfieldlogger-db:
+    image: pgvector/pgvector:pg16
+    container_name: kkfieldlogger-db
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - POSTGRES_DB=kkfieldlogger
+      - POSTGRES_USER=kkfieldlogger
+      - POSTGRES_PASSWORD=${KK_DB_PASSWORD:-kkfieldlogger-beta}
+    volumes:
+      - /Volume*/DockerAppData/kkfieldlogger/database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kkfieldlogger -d kkfieldlogger"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+x-app-meta:
+  web:
+    port: 8090
+    protocol: http

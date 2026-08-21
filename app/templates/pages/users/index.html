@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_users") }}</div>
+            <h2>{{ t("users_title") }}</h2>
+            <p class="section-subtitle">{{ t("users_workspace_copy") }}</p>
+        </div>
+    </section>
+
+    <section class="split-shell split-shell-single">
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("users_create") }}</div>
+                    <h2>{{ t("users_create") }}</h2>
+                </div>
+            </div>
+            <form method="post" action="/portal/users" class="form-grid form-shell user-create-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label>{{ t("label_username") }}
+                    <input type="text" name="username" required>
+                </label>
+                <label>{{ t("field_display_name") }}
+                    <input type="text" name="display_name" required>
+                </label>
+                <label>{{ t("field_email") }}
+                    <input type="email" name="email">
+                </label>
+                <label>{{ t("field_role") }}
+                    <select name="role">
+                        {% for role in available_roles %}
+                        <option value="{{ role.value }}">{{ t("role_" ~ role.value) }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="muted small">
+                        {% if can_create_owner_role %}
+                        {{ t("users_role_hint_finance") }}
+                        {% else %}
+                        {{ t("users_role_hint_finance_company") }}
+                        {% endif %}
+                    </div>
+                </label>
+                <label>{{ t("field_new_password") }}
+                    <input type="text" name="password" required>
+                </label>
+                <label>{{ t("field_linked_employee") }}
+                    <select name="employee_id">
+                        <option value="">{{ t("meta_none") }}</option>
+                        {% for employee in employees %}
+                        <option value="{{ employee.employee_id }}">{{ employee.employee_id }} - {{ employee.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="form-span-all">{{ t("field_project_access") }}
+                    <select name="project_ids" multiple data-project-scope-required="true">
+                        {% for project in projects %}
+                        <option value="{{ project.project_id }}">{{ project.project_id }} - {{ project.project_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="muted small">{{ t("users_project_access_scope_copy") }}</div>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_create") }}</button>
+                </div>
+            </form>
+        </article>
+    </section>
+
+    <section class="panel table-panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("users_title") }}</div>
+                <h2>{{ t("users_title") }}</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ t("table_user") }}</th>
+                        <th>{{ t("table_role") }}</th>
+                        <th>{{ t("table_employee_link") }}</th>
+                        <th>{{ t("table_projects") }}</th>
+                        <th>{{ t("table_status") }}</th>
+                        <th>{{ t("table_actions") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user.display_name }}</strong><br>
+                            <span class="muted">{{ user.username }}</span>
+                        </td>
+                        <td>
+                            {% if user.id == current_user.id or user.role not in available_roles %}
+                            <div class="form-stack">
+                                <strong>{{ t("role_" ~ user.role.value) }}</strong>
+                                <div class="muted small">{{ t("users_self_role_locked") }}</div>
+                            </div>
+                            {% else %}
+                            <form method="post" action="/portal/users/{{ user.id }}/update-role" class="form-stack">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <select name="role">
+                                    {% for role in available_roles %}
+                                    <option value="{{ role.value }}" {% if user.role == role %}selected{% endif %}>{{ t("role_" ~ role.value) }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-secondary">{{ t("btn_update_role") }}</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.employee_id or t("meta_none") }}</td>
+                        <td>
+                            <form method="post" action="/portal/users/{{ user.id }}/sync-projects" class="form-stack">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <select name="project_ids" multiple>
+                                    {% for project in projects %}
+                                    <option value="{{ project.project_id }}" {% if project.project_id in user_projects[user.id] %}selected{% endif %}>{{ project.project_id }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-secondary">{{ t("btn_update_project_access") }}</button>
+                            </form>
+                        </td>
+                        <td>{{ t("status_active") if user.active else t("status_disabled") }}</td>
+                        <td>
+                            <form method="post" action="/portal/users/{{ user.id }}/toggle-active">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-secondary">{{ t("btn_toggle") }}</button>
+                            </form>
+                            <form method="post" action="/portal/users/{{ user.id }}/reset-password" class="form-stack">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="text" name="new_password" placeholder="{{ t('field_new_password_inline') }}" required>
+                                <button type="submit" class="btn btn-danger">{{ t("btn_reset_password") }}</button>
+                            </form>
+                            {% if user.id != current_user.id %}
+                            <form method="post" action="/portal/users/{{ user.id }}/delete" class="form-stack" onsubmit="return confirm('{{ t('confirm_delete_user') }}');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger">{{ t("btn_delete_user") }}</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="empty">{{ t("empty_no_users") }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

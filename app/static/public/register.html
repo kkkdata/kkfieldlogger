@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="申请开通 KK Field Logger 工作区，人工审核后开通。Request access to KK Field Logger; applications are reviewed before activation.">
+    <title>申请开通 | KK Field Logger</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">申请开通</span><span class="lang-en">Access request</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+
+        <main class="request-page">
+            <section class="request-intro">
+                <p class="eyebrow"><span class="lang-zh">工作区申请</span><span class="lang-en">Workspace application</span></p>
+                <h1>
+                    <span class="lang-zh">为你的公司或个人业务申请工作区。</span>
+                    <span class="lang-en">Request a workspace for your company or your own field work.</span>
+                </h1>
+                <p class="lead">
+                    <span class="lang-zh">填好表单提交后，由 K&amp;K 人工审核；通过后邮件通知并开通。提交表单本身不会立即产生账号。</span>
+                    <span class="lang-en">Fill in the form and K&amp;K reviews it; we email you and open the workspace on approval. Submitting does not create an account by itself.</span>
+                </p>
+                <div class="review-box">
+                    <strong><span class="lang-zh">接下来会发生什么</span><span class="lang-en">What happens next</span></strong>
+                    <p>
+                        <span class="lang-zh">我们审核申请、确认用途，通过邮件与你联系，然后开通访问。通常在 1-2 个工作日内回复。</span>
+                        <span class="lang-en">We review the request, confirm the intended use, contact you by email, then enable access — usually within 1-2 business days.</span>
+                    </p>
+                </div>
+            </section>
+
+            <section class="request-card" aria-label="Access request form">
+                <div class="form-head">
+                    <div>
+                        <p class="eyebrow"><span class="lang-zh">申请信息</span><span class="lang-en">Application details</span></p>
+                        <h2><span class="lang-zh">告诉我们谁来使用。</span><span class="lang-en">Tell us who will use it.</span></h2>
+                    </div>
+                    <span class="status-pill"><span class="lang-zh">需审核</span><span class="lang-en">Review required</span></span>
+                </div>
+                <div id="message" class="banner" role="status" aria-live="polite"></div>
+
+                <form method="post" action="/auth/register-company" class="form-grid">
+                    <fieldset class="account-type">
+                        <legend><span class="lang-zh">我以什么身份申请</span><span class="lang-en">I am applying as</span></legend>
+                        <label class="account-type-option">
+                            <input type="radio" name="account_type" value="company" checked>
+                            <span><span class="lang-zh">公司</span><span class="lang-en">Company</span></span>
+                        </label>
+                        <label class="account-type-option">
+                            <input type="radio" name="account_type" value="personal">
+                            <span><span class="lang-zh">个人</span><span class="lang-en">Individual</span></span>
+                        </label>
+                    </fieldset>
+
+                    <label>
+                        <span data-field="company_name">公司名称</span>
+                        <input type="text" name="company_name" autocomplete="organization" required>
+                    </label>
+                    <label>
+                        <span><span class="lang-zh">联系人姓名</span><span class="lang-en">Contact name</span></span>
+                        <input type="text" name="display_name" autocomplete="name" required>
+                    </label>
+                    <label>
+                        <span><span class="lang-zh">工作邮箱</span><span class="lang-en">Work email</span></span>
+                        <input type="email" name="email" autocomplete="email" inputmode="email" required>
+                    </label>
+                    <label>
+                        <span><span class="lang-zh">手机号码</span><span class="lang-en">Mobile phone</span></span>
+                        <input type="tel" name="contact_phone" autocomplete="tel" inputmode="tel" required>
+                    </label>
+                    <label>
+                        <span data-field="contact_title">职务</span>
+                        <input type="text" name="contact_title" autocomplete="organization-title">
+                    </label>
+                    <label>
+                        <span data-field="website_url">公司网站</span>
+                        <input type="url" name="website_url" inputmode="url" placeholder="https://www.example.com">
+                    </label>
+                    <label>
+                        <span><span class="lang-zh">主要用途</span><span class="lang-en">Primary use case</span></span>
+                        <select name="primary_use_case" required>
+                            <option value="" data-zh="请选择" data-en="Select one">请选择</option>
+                            <option value="Construction jobsite documentation" data-zh="建筑工地施工记录" data-en="Construction jobsite documentation">建筑工地施工记录</option>
+                            <option value="Property inspection and maintenance" data-zh="房产巡检与维护" data-en="Property inspection and maintenance">房产巡检与维护</option>
+                            <option value="Field service evidence collection" data-zh="外勤服务记录" data-en="Field service evidence collection">外勤服务记录</option>
+                            <option value="Receipts and cost evidence review" data-zh="票据与成本核对" data-en="Receipts and cost evidence review">票据与成本核对</option>
+                            <option value="Other field evidence workflow" data-zh="其他现场记录场景" data-en="Other field evidence workflow">其他现场记录场景</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span><span class="lang-zh">预计用户数</span><span class="lang-en">Expected users</span></span>
+                        <select name="expected_users" required>
+                            <option value="" data-zh="选择范围" data-en="Select range">选择范围</option>
+                            <option value="1-10">1-10</option>
+                            <option value="11-50">11-50</option>
+                            <option value="51-200">51-200</option>
+                            <option value="200+">200+</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span data-field="expected_projects">预计同时进行的项目数</span>
+                        <select name="expected_projects" required>
+                            <option value="" data-zh="选择范围" data-en="Select range">选择范围</option>
+                            <option value="1-3">1-3</option>
+                            <option value="4-10">4-10</option>
+                            <option value="11-50">11-50</option>
+                            <option value="50+">50+</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span data-field="username">管理员用户名（可选）</span>
+                        <input type="text" name="username" autocomplete="username">
+                    </label>
+                    <label>
+                        <span data-field="password">管理员密码</span>
+                        <input type="password" name="password" autocomplete="new-password" minlength="10" required>
+                    </label>
+                    <label class="field-wide">
+                        <span data-field="company_intro">你们会上传什么内容？由谁来审核？</span>
+                        <textarea name="company_intro" rows="5" required></textarea>
+                    </label>
+                    <label class="consent-row">
+                        <input type="checkbox" required>
+                        <span data-field="consent">我确认这是真实的公司使用申请，并理解开通前需要平台审核。</span>
+                    </label>
+                    <button type="submit" class="btn-primary submit-btn">
+                        <span class="lang-zh">提交申请</span><span class="lang-en">Submit for review</span>
+                    </button>
+                    <p class="form-footnote">
+                        <span class="lang-zh">审核后我们会邮件联系你。请勿在申请表中填写客户的机密资料。</span>
+                        <span class="lang-en">We will email you after review. Do not include confidential customer data in this form.</span>
+                    </p>
+                </form>
+            </section>
+        </main>
+
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var FIELD_TEXT = {
+                company_name: {
+                    company: { zh: "公司名称", en: "Company name" },
+                    personal: { zh: "姓名或团队名", en: "Name or team name" }
+                },
+                contact_title: {
+                    company: { zh: "职务", en: "Job title" },
+                    personal: { zh: "职业或角色", en: "Role or occupation" }
+                },
+                website_url: {
+                    company: { zh: "公司网站（可选）", en: "Company website (optional)" },
+                    personal: { zh: "网站或主页（可选）", en: "Website or profile (optional)" }
+                },
+                expected_projects: {
+                    company: { zh: "预计同时进行的项目数", en: "Expected active projects" },
+                    personal: { zh: "预计同时进行的工地或地点数", en: "Expected active jobs or locations" }
+                },
+                username: {
+                    company: { zh: "管理员用户名（可选）", en: "Preferred admin username (optional)" },
+                    personal: { zh: "用户名（可选）", en: "Preferred username (optional)" }
+                },
+                password: {
+                    company: { zh: "管理员密码（至少 10 位）", en: "Password for the admin account (10+ characters)" },
+                    personal: { zh: "账号密码（至少 10 位）", en: "Password for the account (10+ characters)" }
+                },
+                company_intro: {
+                    company: { zh: "你们会上传什么内容？由谁来审核？", en: "What will your team upload, and who will review it?" },
+                    personal: { zh: "你会上传什么内容？打算怎么用？", en: "What will you upload, and how will you use it?" }
+                },
+                consent: {
+                    company: { zh: "我确认这是真实的公司使用申请，并理解开通前需要平台审核。", en: "I confirm this request is for a real company workspace and understand activation requires platform review." },
+                    personal: { zh: "我确认这是真实的现场记录用途申请，并理解开通前需要平台审核。", en: "I confirm this request is for real field evidence use and understand activation requires platform review." }
+                }
+            };
+            var BANNERS = {
+                application_received: { kind: "success", zh: "申请已收到，正在等待审核；结果会通过邮件通知你。", en: "Application received. It is pending review; we will contact you by email." },
+                account_exists: { kind: "error", zh: "该邮箱或用户名已有正式账号，请直接登录。", en: "An active account already exists for this email or username." },
+                application_pending: { kind: "error", zh: "该邮箱或用户名已有待审核的申请，请耐心等待邮件通知。", en: "A pending application already exists for this contact email or username." },
+                password_too_short: { kind: "error", zh: "密码至少需要 10 位。", en: "Password must be at least 10 characters." },
+                company_intro_required: { kind: "error", zh: "请简单描述你们计划上传和审核的内容。", en: "Please describe what you plan to upload and review." },
+                generic_error: { kind: "error", zh: "暂时无法提交申请，请稍后重试或联系支持。", en: "Unable to submit the application right now. Please retry or contact support." }
+            };
+
+            var bannerKey = null;
+            var banner = document.getElementById("message");
+
+            function currentLang() { return document.body.getAttribute("data-lang"); }
+            function accountType() {
+                var checked = document.querySelector("input[name='account_type']:checked");
+                return checked ? checked.value : "company";
+            }
+            function applyFieldText() {
+                var type = accountType(), lang = currentLang();
+                document.querySelectorAll("[data-field]").forEach(function (node) {
+                    var entry = FIELD_TEXT[node.dataset.field];
+                    if (entry) { node.textContent = entry[type][lang]; }
+                });
+                document.querySelectorAll("option[data-zh]").forEach(function (option) {
+                    option.textContent = lang === "zh" ? option.dataset.zh : option.dataset.en;
+                });
+            }
+            function renderBanner() {
+                if (!bannerKey) { return; }
+                var entry = BANNERS[bannerKey] || BANNERS.generic_error;
+                banner.className = "banner visible " + entry.kind;
+                banner.textContent = currentLang() === "zh" ? entry.zh : entry.en;
+            }
+
+            window.kkOnLangChange = function () { applyFieldText(); renderBanner(); };
+
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            applyLang(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                applyLang(currentLang() === "zh" ? "en" : "zh");
+            });
+            function applyLang(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "申请开通 | KK Field Logger" : "Request Access | KK Field Logger";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+                applyFieldText();
+                renderBanner();
+            }
+
+            document.querySelectorAll("input[name='account_type']").forEach(function (input) {
+                input.addEventListener("change", applyFieldText);
+            });
+
+            var params = new URLSearchParams(window.location.search);
+            if (params.get("submitted") === "application_received") {
+                bannerKey = "application_received";
+            } else if (params.get("error")) {
+                bannerKey = BANNERS[params.get("error")] ? params.get("error") : "generic_error";
+            }
+            renderBanner();
+        })();
+    </script>
+</body>
+</html>

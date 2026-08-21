@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.reports-section {
+    display: grid;
+    gap: 1rem;
+}
+.reports-tab-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    position: sticky;
+    top: 122px;
+    z-index: 6;
+    padding: 0.75rem;
+    border-radius: 18px;
+    background: rgba(255, 251, 245, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow: 0 16px 30px rgba(16, 36, 61, 0.06);
+    backdrop-filter: blur(12px);
+}
+.reports-tab-button {
+    border: 1px solid #c7d6ea;
+    background: #eef4fb;
+    color: #173a63;
+}
+.reports-tab-button.is-active {
+    background: #173a63;
+    color: #fff;
+    border-color: #173a63;
+}
+.reports-list {
+    display: grid;
+    gap: 1rem;
+}
+.report-card {
+    border: 1px solid #d7dfeb;
+    border-radius: 22px;
+    padding: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+.report-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.report-card-meta {
+    display: grid;
+    gap: 0.35rem;
+}
+.report-photo-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+.report-photo-strip img {
+    width: 96px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #d7dfeb;
+    background: #f5f7fb;
+}
+</style>
+
+<div class="page-stack">
+<section class="panel hero-panel">
+    <div class="panel-header">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_reports") }}</div>
+            <h2>{{ t("ai_reports_title") }}</h2>
+            <div class="section-subtitle">{{ t("reports_workspace_copy") }}</div>
+        </div>
+        <div class="muted small" id="reports-updated-at">{{ t("ai_reports_updated_at", value=reports_payload.updated_at) }}</div>
+    </div>
+</section>
+
+<section class="reports-section">
+    <div class="reports-tab-row" id="reports-tab-row">
+        <button type="button" class="btn reports-tab-button is-active" data-report-tab="generated">{{ t("reports_tab_generated") }}</button>
+        <button type="button" class="btn reports-tab-button" data-report-tab="progress">{{ t("reports_tab_progress") }}</button>
+    </div>
+    <section class="reports-list" id="reports-list"></section>
+</section>
+</div>
+
+<script>
+(() => {
+    const listRoot = document.getElementById("reports-list");
+    const updatedAt = document.getElementById("reports-updated-at");
+    const tabButtons = Array.from(document.querySelectorAll("[data-report-tab]"));
+    if (!listRoot || !updatedAt || !tabButtons.length) {
+        return;
+    }
+
+    let latestPayload = {{ reports_payload|tojson }};
+    const csrfToken = "{{ csrf_token }}";
+    const nextUrl = "/portal/reports";
+    let activeTab = {{ active_report_tab|default("generated")|tojson }};
+    const labels = {
+        updatedAt: "{{ t('ai_reports_updated_at', value='__VALUE__') }}",
+        generatedAt: "{{ t('ai_reports_generated_at') }}",
+        sourceCount: "{{ t('ai_reports_source_count') }}",
+        status: "{{ t('table_status') }}",
+        progress: "{{ t('progress_report_overall_progress') }}",
+        overallStatus: "{{ t('progress_report_overall_status') }}",
+        download: "{{ t('btn_download_report') }}",
+        retry: "{{ t('btn_retry_report') }}",
+        openProgress: "{{ t('btn_open_progress_report') }}",
+        progressPending: "{{ t('status_pending') }}",
+        emptyGenerated: "{{ t('empty_no_reports') }}",
+        emptyProgress: "{{ t('empty_no_progress_reports') }}",
+        viewPhotos: "{{ t('reports_source_photos') }}",
+    };
+
+    const escapeHtml = (value) => String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const setActiveTab = (nextTab) => {
+        activeTab = nextTab === "progress" ? "progress" : "generated";
+        tabButtons.forEach((button) => {
+            button.classList.toggle("is-active", button.dataset.reportTab === activeTab);
+        });
+    };
+
+    const renderGeneratedItem = (item) => {
+        const downloadButton = item.portal_download_url
+            ? `<a class="btn btn-primary" href="${escapeHtml(item.portal_download_url)}">${labels.download}</a>`
+            : "";
+        const retryButton = item.status === "failed"
+            ? `
+                <form method="post" action="/portal/reports/${escapeHtml(item.report_id)}/retry">
+                    <input type="hidden" name="csrf_token" value="${escapeHtml(csrfToken)}">
+                    <input type="hidden" name="next_url" value="${escapeHtml(nextUrl)}">
+                    <button type="submit" class="btn btn-secondary">${labels.retry}</button>
+                </form>
+            `
+            : "";
+        return `
+            <article class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-meta">
+                        <div><strong>${escapeHtml(item.title)}</strong></div>
+                        <div class="muted small">${labels.generatedAt}: ${escapeHtml(item.created_at_local || item.created_at || "")}</div>
+                        <div class="muted small">${labels.sourceCount}: ${escapeHtml(item.photo_count)}</div>
+                        <div class="tag-row">
+                            <span class="tag">${labels.status}: ${escapeHtml(item.status)}</span>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        ${downloadButton}
+                        ${retryButton}
+                    </div>
+                </div>
+            </article>
+        `;
+    };
+
+    const renderProgressItem = (item) => {
+        const openButton = item.status === "completed"
+            ? `<a class="btn btn-primary" href="${escapeHtml(item.portal_url)}">${labels.openProgress}</a>`
+            : "";
+        const photoStrip = Array.isArray(item.photos) && item.photos.length
+            ? `
+                <div class="report-photo-strip">
+                    ${item.photos.map((photo) => `
+                        <img src="${escapeHtml(photo.thumb_url || photo.image_url || "")}" alt="${escapeHtml(photo.original_file_name || photo.id)}">
+                    `).join("")}
+                </div>
+              `
+            : "";
+        return `
+            <article class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-meta">
+                        <div><strong>${escapeHtml(item.title || item.project_id || item.report_id)}</strong></div>
+                        ${item.summary_excerpt ? `<div>${escapeHtml(item.summary_excerpt)}</div>` : ""}
+                        <div class="muted small">${labels.generatedAt}: ${escapeHtml(item.created_at_local || item.created_at || "")}</div>
+                        <div class="muted small">${labels.sourceCount}: ${escapeHtml(item.photo_count)}</div>
+                        <div class="tag-row">
+                            <span class="tag">${labels.status}: ${escapeHtml(item.status)}</span>
+                            ${item.structured_report && item.structured_report.overall_progress_percent !== null && item.structured_report.overall_progress_percent !== undefined
+                                ? `<span class="tag">${labels.progress}: ${escapeHtml(item.structured_report.overall_progress_percent)}%</span>`
+                                : ""}
+                            ${item.structured_report && item.structured_report.overall_status
+                                ? `<span class="tag">${labels.overallStatus}: ${escapeHtml(item.structured_report.overall_status)}</span>`
+                                : ""}
+                        </div>
+                        ${item.error_message ? `<div class="muted small">${escapeHtml(item.error_message)}</div>` : ""}
+                    </div>
+                    <div class="form-actions">
+                        ${openButton}
+                    </div>
+                </div>
+                ${photoStrip}
+            </article>
+        `;
+    };
+
+    const renderPayload = (payload) => {
+        const generatedItems = Array.isArray(payload.generated_items) ? payload.generated_items : [];
+        const progressItems = Array.isArray(payload.progress_items) ? payload.progress_items : [];
+        const items = activeTab === "progress" ? progressItems : generatedItems;
+        const emptyLabel = activeTab === "progress" ? labels.emptyProgress : labels.emptyGenerated;
+        updatedAt.textContent = labels.updatedAt.replace("__VALUE__", payload.updated_at || "");
+        if (!items.length) {
+            listRoot.innerHTML = `<article class="panel empty">${emptyLabel}</article>`;
+            return;
+        }
+        listRoot.innerHTML = items.map((item) => activeTab === "progress" ? renderProgressItem(item) : renderGeneratedItem(item)).join("");
+    };
+
+    const poll = async () => {
+        try {
+            const response = await fetch("/portal/reports/data", {
+                headers: { "Accept": "application/json" },
+                credentials: "same-origin",
+                cache: "no-store",
+            });
+            if (!response.ok) {
+                return;
+            }
+            latestPayload = await response.json();
+            renderPayload(latestPayload);
+        } catch (error) {
+            console.warn("report_history_poll_failed", error);
+        }
+    };
+
+    tabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            setActiveTab(button.dataset.reportTab || "generated");
+            renderPayload(latestPayload);
+        });
+    });
+
+    setActiveTab(activeTab);
+    renderPayload(latestPayload);
+    window.setInterval(poll, 5000);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<style>
+.map-summary {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.75rem;
+}
+.map-summary-copy {
+    color: var(--slate-500);
+    font-size: 0.92rem;
+}
+.map-summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.map-status-tag {
+    background: linear-gradient(180deg, #eef5ff 0%, #e5f0ff 100%);
+    border: 1px solid #d3def0;
+}
+.map-canvas {
+    min-height: 70vh;
+}
+.map-popup-preview {
+    width: 220px;
+}
+.map-popup-preview img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+.map-marker-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+.map-marker-icon-photo {
+    background: linear-gradient(180deg, #1e4d83 0%, #173a63 100%);
+}
+.map-marker-icon-video {
+    background: linear-gradient(180deg, #8d2f1f 0%, #6f2418 100%);
+}
+.map-cluster-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #173a63 0%, #204f85 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-stack">
+<section class="panel hero-panel">
+    <div class="hero-copy">
+        <div class="section-eyebrow">{{ t("page_map") }}</div>
+        <h2>{{ t("map_title") }}</h2>
+        <p class="section-subtitle">{{ t("map_workspace_copy") }}</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="map-toolbar-grid">
+        <form method="get" class="form-grid" id="map-filter-form">
+            <label>{{ t("field_project") }}
+                <select name="project_id" id="map-project">
+                    <option value="">{{ t("field_all_visible_projects") }}</option>
+                    {% for project in projects %}
+                    <option value="{{ project.project_id }}" {% if filters.project_id == project.project_id %}selected{% endif %}>{{ project.project_id }} - {{ project.project_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>{{ t("field_start_date") }}
+                <input type="date" name="start_date" id="map-start-date" value="{{ filters.start_date }}">
+            </label>
+            <label>{{ t("field_end_date") }}
+                <input type="date" name="end_date" id="map-end-date" value="{{ filters.end_date }}">
+            </label>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ t("btn_apply_filters") }}</button>
+            </div>
+        </form>
+    </div>
+    <div class="map-summary">
+        <div class="map-summary-copy" id="map-summary-copy">{{ t("map_focus_recent_project") }}</div>
+        <div class="map-summary-tags" id="map-summary-tags"></div>
+    </div>
+</section>
+
+<section class="map-shell">
+    <div class="panel map-canvas" id="photo-map"></div>
+</section>
+</div>
+{% endblock %}
+{% block after_scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+(() => {
+    const mapRoot = document.getElementById("photo-map");
+    const summaryCopy = document.getElementById("map-summary-copy");
+    const summaryTags = document.getElementById("map-summary-tags");
+    if (!mapRoot || !summaryCopy || !summaryTags) {
+        return;
+    }
+
+    const labels = {
+        total: "{{ t('map_total_points') }}",
+        photo: "{{ t('map_photo_count') }}",
+        video: "{{ t('map_video_count') }}",
+        noPoints: "{{ t('map_no_points') }}",
+        focusLabel: "{{ t('map_focus_label') }}",
+        focusRecent: "{{ t('map_focus_recent_project') }}",
+        mediaPhoto: "{{ t('map_media_photo') }}",
+        mediaVideo: "{{ t('map_media_video') }}",
+        duration: "{{ t('field_duration') }}",
+    };
+
+    const map = L.map("photo-map").setView([39.5, -98.35], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    const clusterGroup = L.markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 54,
+        iconCreateFunction(cluster) {
+            return L.divIcon({
+                html: `<span class="map-cluster-icon">${cluster.getChildCount()}</span>`,
+                className: "map-cluster-wrapper",
+                iconSize: [44, 44],
+            });
+        },
+    });
+    map.addLayer(clusterGroup);
+
+    const params = new URLSearchParams({
+        project_id: document.getElementById("map-project").value,
+        start_date: document.getElementById("map-start-date").value,
+        end_date: document.getElementById("map-end-date").value
+    });
+
+    const escapeHtml = (value) => String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const markerIcon = (mediaKind) => L.divIcon({
+        html: `<span class="map-marker-icon map-marker-icon-${mediaKind === "video" ? "video" : "photo"}">${mediaKind === "video" ? "V" : "P"}</span>`,
+        className: "map-marker-wrapper",
+        iconSize: [34, 34],
+        iconAnchor: [17, 34],
+        popupAnchor: [0, -28],
+    });
+
+    const setSummary = (items, focusProjectId) => {
+        const photoCount = items.filter((item) => item.media_kind !== "video").length;
+        const videoCount = items.filter((item) => item.media_kind === "video").length;
+        summaryTags.innerHTML = [
+            `<span class="tag map-status-tag">${labels.total}: ${items.length}</span>`,
+            `<span class="tag map-status-tag">${labels.photo}: ${photoCount}</span>`,
+            `<span class="tag map-status-tag">${labels.video}: ${videoCount}</span>`,
+        ].join("");
+        if (!items.length) {
+            summaryCopy.textContent = labels.noPoints;
+            return;
+        }
+        summaryCopy.textContent = focusProjectId
+            ? `${labels.focusLabel}: ${focusProjectId}`
+            : labels.focusRecent;
+    };
+
+    fetch(`/portal/map/photos?${params.toString()}`)
+        .then((response) => response.json())
+        .then((items) => {
+            clusterGroup.clearLayers();
+            if (!Array.isArray(items) || !items.length) {
+                setSummary([], "");
+                return;
+            }
+
+            const selectedProjectId = document.getElementById("map-project").value;
+            const focusProjectId = selectedProjectId || String(items[0].project_id || "");
+            const focusItems = focusProjectId
+                ? items.filter((item) => String(item.project_id || "") === focusProjectId)
+                : items;
+            const bounds = [];
+
+            items.forEach((item) => {
+                const previewUrl = item.preview_url || item.thumb_url || item.image_url || "";
+                const previewMarkup = previewUrl
+                    ? `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(item.original_file_name || `Photo ${item.photo_id}`)}">`
+                    : "";
+                const durationMarkup = item.media_kind === "video" && Number(item.duration_seconds || 0) > 0
+                    ? `<div><strong>${escapeHtml(labels.duration)}:</strong> ${Number(item.duration_seconds || 0).toFixed(1)}s</div>`
+                    : "";
+                const marker = L.marker([item.gps_lat, item.gps_lon], {
+                    icon: markerIcon(item.media_kind || "photo"),
+                    title: item.original_file_name || `#${item.photo_id}`,
+                });
+                marker.bindPopup(`
+                    <div class="map-popup-preview">
+                        ${previewMarkup}
+                        <div><strong>${escapeHtml(item.project_id || "-")}</strong></div>
+                        <div>${escapeHtml(item.media_kind === "video" ? labels.mediaVideo : labels.mediaPhoto)}</div>
+                        <div>${escapeHtml(item.captured_at || "")}</div>
+                        ${durationMarkup}
+                    </div>
+                `);
+                clusterGroup.addLayer(marker);
+            });
+
+            focusItems.forEach((item) => {
+                bounds.push([item.gps_lat, item.gps_lon]);
+            });
+            if (!bounds.length) {
+                items.forEach((item) => bounds.push([item.gps_lat, item.gps_lon]));
+            }
+            if (bounds.length) {
+                map.fitBounds(bounds, { padding: [28, 28], maxZoom: focusProjectId ? 15 : 13 });
+            }
+            setSummary(items, focusProjectId);
+        })
+        .catch(() => {
+            setSummary([], "");
+        });
+})();
+</script>
+{% endblock %}

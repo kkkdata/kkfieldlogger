@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="KK Field Logger：工地影像证据工作台。工人手机拍照即归档，经理在线审核出报告。Jobsite photo evidence, filed to project, person, and time.">
+    <title>KK Field Logger | 工地影像证据工作台</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">工地影像证据工作台</span><span class="lang-en">Field evidence workspace</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero-clean">
+                <div class="hero-copy">
+                    <p class="eyebrow"><span class="lang-zh">面向工程项目团队</span><span class="lang-en">For construction and field teams</span></p>
+                    <h1>
+                        <span class="lang-zh">工地上的每一张照片，都归到项目、人和时间点上。</span>
+                        <span class="lang-en">Every jobsite photo, filed to the project, the person, and the moment.</span>
+                    </h1>
+                    <p class="lead">
+                        <span class="lang-zh">工人手机拍照上传，系统自动记下项目、工号、GPS 和时间；经理在后台审核、批注、出报告。进度、质量、隐蔽工程、材料票据——需要说清楚的时候，都拿得出来。</span>
+                        <span class="lang-en">Crews shoot from their phones; every upload carries the project, employee, GPS, and time. Managers review, annotate, and build reports. Progress, quality, concealed work, receipts — when you need to prove it, it's there.</span>
+                    </p>
+                    <div class="action-row">
+                        <a class="btn-primary" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                        <a class="btn-secondary" href="/support"><span class="lang-zh">联系我们</span><span class="lang-en">Contact us</span></a>
+                    </div>
+                </div>
+                <div class="hero-summary" aria-label="Product summary">
+                    <div>
+                        <span class="summary-label"><span class="lang-zh">采集</span><span class="lang-en">Capture</span></span>
+                        <strong><span class="lang-zh">拍照即归档</span><span class="lang-en">Shoot and it's filed</span></strong>
+                        <p>
+                            <span class="lang-zh">照片、视频、语音备注、票据一键上传；工地没信号也能先存着，回到网络自动补传。</span>
+                            <span class="lang-en">Photos, video, voice notes, and receipts upload in one tap. No signal on site? They queue and sync when you're back online.</span>
+                        </p>
+                    </div>
+                    <div>
+                        <span class="summary-label"><span class="lang-zh">审核</span><span class="lang-en">Review</span></span>
+                        <strong><span class="lang-zh">经理在线过目</span><span class="lang-en">Managers review online</span></strong>
+                        <p>
+                            <span class="lang-zh">按项目、人、日期筛选，批注、审批，一键挑出能给业主看的照片。</span>
+                            <span class="lang-en">Filter by project, person, or date; annotate and approve; pick the photos the client gets to see.</span>
+                        </p>
+                    </div>
+                    <div>
+                        <span class="summary-label"><span class="lang-zh">AI 辅助</span><span class="lang-en">AI assist</span></span>
+                        <strong><span class="lang-zh">每张照片先读一遍</span><span class="lang-en">Every photo pre-read</span></strong>
+                        <p>
+                            <span class="lang-zh">AI 生成摘要和标签，帮你搜得到、找得快；结论以人工确认为准。</span>
+                            <span class="lang-en">AI writes summaries and tags so photos are searchable; people make the final call.</span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section-clean">
+                <div class="section-head">
+                    <p class="eyebrow"><span class="lang-zh">这套系统解决什么</span><span class="lang-en">What it's for</span></p>
+                    <h2>
+                        <span class="lang-zh">这不是相册，是证据库。</span>
+                        <span class="lang-en">Not a photo album. An evidence system.</span>
+                    </h2>
+                    <p>
+                        <span class="lang-zh">为需要"事后说得清"的工程公司设计：每条记录都绑定项目、员工、位置和审核状态，墙封上之前拍了什么、票据对着哪次施工，随时查得出来。</span>
+                        <span class="lang-en">Built for companies that must answer "prove it" later: every record is tied to a project, an employee, a location, and a review status — what was shot before the wall was closed, which receipt belongs to which pour.</span>
+                    </p>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <h3><span class="lang-zh">现场影像档案</span><span class="lang-en">Field media records</span></h3>
+                        <p>
+                            <span class="lang-zh">照片、视频、语音、票据连同 GPS 和时间，按公司和项目归档，不散落在工人手机里。</span>
+                            <span class="lang-en">Photos, video, voice notes, and receipts — with GPS and time — filed by company and project, not scattered across crew phones.</span>
+                        </p>
+                    </article>
+                    <article class="feature-card">
+                        <h3><span class="lang-zh">经理审核流</span><span class="lang-en">Manager review flow</span></h3>
+                        <p>
+                            <span class="lang-zh">审批、批注、控制对业主可见；发现问题直接派整改跟拍任务。</span>
+                            <span class="lang-en">Approve, annotate, control what the client sees; spot an issue and assign a retake task on the spot.</span>
+                        </p>
+                    </article>
+                    <article class="feature-card">
+                        <h3><span class="lang-zh">票据与成本佐证</span><span class="lang-en">Receipts and cost context</span></h3>
+                        <p>
+                            <span class="lang-zh">加油票、材料票贴着当天的施工记录存放，财务对账不再凭记忆。</span>
+                            <span class="lang-en">Fuel and material receipts live next to that day's site records, so finance reconciles against evidence, not memory.</span>
+                        </p>
+                    </article>
+                    <article class="feature-card">
+                        <h3><span class="lang-zh">受控准入</span><span class="lang-en">Controlled access</span></h3>
+                        <p>
+                            <span class="lang-zh">工作区先审核后开通；公司管理员统一管理成员、项目和上传密钥。</span>
+                            <span class="lang-en">Workspaces are reviewed before activation; company admins manage members, projects, and upload keys.</span>
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section-clean split-clean">
+                <article>
+                    <p class="eyebrow"><span class="lang-zh">开通方式</span><span class="lang-en">Getting access</span></p>
+                    <h2>
+                        <span class="lang-zh">提交申请，人工审核后开通。</span>
+                        <span class="lang-en">Apply, we review, then your workspace opens.</span>
+                    </h2>
+                    <p>
+                        <span class="lang-zh">在本页提交公司或个人申请后，K&amp;K Data Service 会人工审核。审核通过我们开通工作区并通知你——提交表单不会立即产生账号。</span>
+                        <span class="lang-en">Submit a company or individual request here and K&amp;K Data Service reviews it. We open the workspace and notify you on approval — submitting the form does not create an account by itself.</span>
+                    </p>
+                </article>
+                <article class="notice-card">
+                    <h3><span class="lang-zh">已有账号？</span><span class="lang-en">Already invited?</span></h3>
+                    <p>
+                        <span class="lang-zh">公司管理员已经给你开过账号的话，直接登录即可，不需要重复申请。</span>
+                        <span class="lang-en">If your company admin already issued your credentials, just log in — no need to apply again.</span>
+                    </p>
+                    <div class="action-row compact">
+                        <a class="btn-primary" href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                        <a class="btn-secondary" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            apply(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                apply(document.body.getAttribute("data-lang") === "zh" ? "en" : "zh");
+            });
+            function apply(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "KK Field Logger | 工地影像证据工作台" : "KK Field Logger | Field Evidence Workspace";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+            }
+        })();
+    </script>
+</body>
+</html>

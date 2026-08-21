@@ -1,0 +1,19 @@
+.env
+.env.*
+!.env.example
+.git
+.codex_backups
+logs
+tmp
+kk-prod
+node_modules
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+tests
+# Demo/test site served by nginx from the host mount, never from the image.
+# Keeping it out of the build context saves ~104MB per image.
+app/static/public/test-site

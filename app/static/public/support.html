@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="KK Field Logger 支持与联系方式。Support contact.">
+    <title>支持 | KK Field Logger</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">支持</span><span class="lang-en">Support</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+        <main class="plain-page">
+            <p class="eyebrow"><span class="lang-zh">支持</span><span class="lang-en">Support</span></p>
+            <h1><span class="lang-zh">账号、上传、工作区的问题，找我们。</span><span class="lang-en">Account, upload, or workspace questions — talk to us.</span></h1>
+            <p class="lead">
+                <span class="lang-zh">来信请附上公司名、账号邮箱、涉及的项目名和问题描述，我们处理得更快。</span><span class="lang-en">Include your company name, account email, the project involved, and a short description — it speeds things up.</span>
+            </p>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">邮箱</span><span class="lang-en">Email</span></h2>
+                <p><a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">电话</span><span class="lang-en">Phone</span></h2>
+                <p><a href="tel:+18327586613">+1 832-758-6613</a></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">注销账号</span><span class="lang-en">Account deletion</span></h2>
+                <p><span class="lang-zh">需要注销账号？从<a href="/delete-account">注销页面</a>提交申请。</span><span class="lang-en">Need to delete an account? Start from the <a href="/delete-account">deletion page</a>.</span></p>
+            </section>
+        </main>
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            apply(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                apply(document.body.getAttribute("data-lang") === "zh" ? "en" : "zh");
+            });
+            function apply(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "支持 | KK Field Logger" : "Support | KK Field Logger";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+                if (window.kkOnLangChange) { window.kkOnLangChange(next); }
+            }
+        })();
+    </script>
+</body>
+</html>

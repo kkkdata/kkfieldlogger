@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="KK Logger" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>KK Field Logger H5 Capture</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <img src="./icons/icon-192.png" alt="KK Field Logger" class="brand-logo" />
+        <div>
+          <div class="eyebrow">KK Field Logger</div>
+          <h1>H5 Field Capture</h1>
+          <p class="topbar-subtitle">Fast browser capture with offline queue, GPS, watermarking, and same-device setup memory.</p>
+          <p class="topbar-note">Emergency-use fallback only. For the best long-term experience, please use the dedicated mobile app when it becomes available.</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="installButton" class="secondary-button hidden" type="button">Install to Home Screen</button>
+      </div>
+    </header>
+
+    <section class="card summary-card">
+      <div class="summary-grid">
+        <div class="summary-pill">
+          <span>Worker</span>
+          <strong id="workerSummary">Not set</strong>
+        </div>
+        <div class="summary-pill">
+          <span>Project</span>
+          <strong id="projectSummary">Not set</strong>
+        </div>
+        <div class="summary-pill">
+          <span>Connection</span>
+          <strong id="connectionSummary">Checking...</strong>
+        </div>
+        <div class="summary-pill">
+          <span>Queue</span>
+          <strong id="queueSummaryChip">0 pending</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card install-card">
+      <div class="install-card-grid">
+        <div>
+          <div class="section-label">Quick Access</div>
+          <h2>Save this page to the phone desktop</h2>
+          <p id="installSummary" class="subtle-copy">Install this H5 tool for faster emergency access in the field.</p>
+          <p class="helper-text compact-helper emergency-note">This H5 page is mainly for emergency use. For the best capture, upload, and queue experience, use the dedicated app when it is available.</p>
+        </div>
+        <div class="install-side">
+          <div class="install-status-pill">
+            <span>Install status</span>
+            <strong id="installStatus">Checking...</strong>
+          </div>
+          <p id="installHelp" class="install-help">If your browser supports installation, this page can be pinned to the home screen like an app.</p>
+        </div>
+      </div>
+    </section>
+
+    <main class="page-grid">
+      <section class="card settings-card">
+        <div class="card-header">
+          <div>
+            <div class="section-label">Worker Setup</div>
+            <h2>Remember this device</h2>
+            <p id="settingsSummary" class="subtle-copy">Save once, then come back and keep capturing.</p>
+          </div>
+          <button id="toggleSettingsButton" class="ghost-button" type="button">Hide</button>
+        </div>
+        <div id="settingsBody" class="settings-body">
+          <form id="settingsForm" class="settings-form">
+            <div class="helper-text fixed-endpoint-note">Server endpoint follows the current secure domain automatically.</div>
+            <label>
+              <span>Employee ID</span>
+              <input id="employeeIdInput" type="text" placeholder="Company employee ID" autocomplete="username" inputmode="numeric" />
+            </label>
+            <label>
+              <span>Project ID</span>
+              <input id="projectIdInput" type="text" placeholder="Company project ID" inputmode="text" />
+            </label>
+            <label>
+              <span>API Key</span>
+              <input id="apiKeyInput" type="password" placeholder="Worker API key" autocomplete="current-password" />
+            </label>
+            <div class="settings-actions">
+              <button id="saveSettingsButton" class="primary-button" type="submit">Save Settings</button>
+              <button id="clearSettingsButton" class="secondary-button" type="button">Clear Stored Settings</button>
+            </div>
+          </form>
+          <p id="storageState" class="helper-text"></p>
+          <p class="helper-text warning-text">
+            Camera and GPS require HTTPS (or localhost) in modern mobile browsers.
+          </p>
+        </div>
+      </section>
+
+      <section class="card capture-card">
+        <div class="card-header capture-header">
+          <div>
+            <div class="section-label">Capture</div>
+            <h2>Rear camera continuous mode</h2>
+            <p id="captureTip" class="subtle-copy">Save worker settings once, then start the camera and keep capturing.</p>
+          </div>
+          <div class="capture-actions-inline">
+            <button id="startCameraButton" class="secondary-button" type="button">Start Camera</button>
+            <button id="stopCameraButton" class="ghost-button" type="button">Stop</button>
+          </div>
+        </div>
+
+        <div id="cameraStage" class="camera-stage">
+          <video id="cameraPreview" class="camera-preview" autoplay playsinline muted></video>
+          <canvas id="captureCanvas" class="hidden"></canvas>
+          <div class="camera-guides" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div id="cameraOverlay" class="camera-overlay">Camera idle</div>
+        </div>
+
+        <div class="capture-toolbar">
+          <button id="takePhotoButton" class="capture-button" type="button">Take Photo</button>
+          <label class="fallback-upload hidden" id="fallbackCaptureLabel">
+            <span>Fallback Capture</span>
+            <input id="fallbackFileInput" type="file" accept="image/*" capture="environment" />
+          </label>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-tile">
+            <span class="status-label">GPS</span>
+            <strong id="gpsStatus">Idle</strong>
+          </div>
+          <div class="status-tile">
+            <span class="status-label">Upload</span>
+            <strong id="uploadStatus">Idle</strong>
+          </div>
+          <div class="status-tile">
+            <span class="status-label">Queue</span>
+            <strong id="queueStatus">0 pending</strong>
+          </div>
+        </div>
+
+        <div id="syncProgressWrap" class="sync-progress hidden">
+          <div class="sync-progress-copy">
+            <span id="syncProgressLabel">Idle</span>
+            <strong id="syncProgressPercent">0%</strong>
+          </div>
+          <progress id="syncProgressBar" max="100" value="0"></progress>
+        </div>
+
+        <div id="captureFeedback" class="feedback-panel">
+          <div class="feedback-copy">
+            <div class="section-label">Latest Capture</div>
+            <p id="captureMessage">No media captured yet.</p>
+          </div>
+          <img id="captureThumbnail" class="capture-thumbnail hidden" alt="Latest capture" />
+        </div>
+      </section>
+
+      <section class="card queue-card">
+        <div class="card-header queue-header">
+          <div>
+            <div class="section-label">Offline Queue</div>
+            <h2>Safe under weak network</h2>
+            <p id="networkHint" class="helper-text compact-helper">Waiting to check network status.</p>
+          </div>
+          <div class="queue-actions">
+            <button id="syncNowButton" class="primary-button" type="button">Sync Pending</button>
+            <button id="clearQueueButton" class="ghost-button" type="button">Clear Queue</button>
+          </div>
+        </div>
+        <ul id="queueList" class="queue-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="申请注销 KK Field Logger 账号。Request account deletion.">
+    <title>注销账号 | KK Field Logger</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">注销账号</span><span class="lang-en">Account deletion</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+        <main class="plain-page">
+            <p class="eyebrow"><span class="lang-zh">注销申请</span><span class="lang-en">Deletion request</span></p>
+            <h1><span class="lang-zh">申请注销账号。</span><span class="lang-en">Request account deletion.</span></h1>
+            <p class="lead">
+                <span class="lang-zh">注销由支持人员处理：公司所有的记录、法定保留义务和工作区权限需要逐项核对后才能删除。</span><span class="lang-en">Deletion requests are handled by support so company-owned records, legal retention, and workspace permissions can each be checked before removal.</span>
+            </p>
+            <section class="plain-card">
+                <h2><span class="lang-zh">如何申请</span><span class="lang-en">How to request</span></h2>
+                <p>
+                    <span class="lang-zh">发邮件给支持，写明账号邮箱、公司名，并确认你希望注销该账号。</span><span class="lang-en">Email support with the account email and company name, confirming you want the account reviewed for deletion.</span>
+                </p>
+                <div class="action-row">
+                    <a class="btn-primary" href="mailto:Michelle@kkdatasvc.com?subject=KK%20Field%20Logger%20account%20deletion%20request"><span class="lang-zh">发送注销申请</span><span class="lang-en">Email deletion request</span></a>
+                    <a class="btn-secondary" href="/privacy"><span class="lang-zh">查看隐私政策</span><span class="lang-en">Review privacy policy</span></a>
+                </div>
+            </section>
+        </main>
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            apply(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                apply(document.body.getAttribute("data-lang") === "zh" ? "en" : "zh");
+            });
+            function apply(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "注销账号 | KK Field Logger" : "Delete Account | KK Field Logger";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+                if (window.kkOnLangChange) { window.kkOnLangChange(next); }
+            }
+        })();
+    </script>
+</body>
+</html>

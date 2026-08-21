@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .today-grid { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+  @media (min-width: 900px) { .today-grid { grid-template-columns: 2fr 1fr; } }
+  .today-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .queue-item { display: flex; gap: 14px; align-items: flex-start; border-left: 4px solid var(--border-color, #d8d5cd); }
+  .queue-item.crit { border-left-color: #b3402f; }
+  .queue-item.warn { border-left-color: #a97a1c; }
+  .queue-item.info { border-left-color: #d95f27; }
+  .queue-count { font-size: 30px; font-weight: 700; line-height: 1.1; min-width: 64px; font-variant-numeric: tabular-nums; }
+  .queue-item.crit .queue-count { color: #b3402f; }
+  .queue-item.warn .queue-count { color: #a97a1c; }
+  .queue-item.info .queue-count { color: #d95f27; }
+  .queue-body { flex: 1; min-width: 0; }
+  .queue-title { font-weight: 600; margin: 0 0 2px; }
+  .queue-sub { margin: 0 0 10px; opacity: .75; font-size: 13px; }
+  .queue-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .today-lede { margin: 0 0 4px; font-size: 15px; }
+  .today-lede strong { color: #d95f27; }
+  table.pulse-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.pulse-table td { padding: 7px 4px; border-top: 1px solid rgba(127,127,127,.2); vertical-align: middle; }
+  table.pulse-table tr:first-child td { border-top: 0; }
+  .pulse-proj { font-weight: 600; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pulse-num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; opacity: .75; }
+  .spark { display: inline-flex; align-items: flex-end; gap: 2px; height: 22px; }
+  .spark i { width: 6px; min-height: 3px; background: rgba(127,127,127,.35); border-radius: 2px 2px 0 0; display: inline-block; }
+  .spark i.hot { background: #d95f27; }
+  .status-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .status-pill.ok { background: rgba(62,122,82,.15); color: #3e7a52; }
+  .status-pill.slowing { background: rgba(169,122,28,.15); color: #a97a1c; }
+  .status-pill.stalled { background: rgba(179,64,47,.15); color: #b3402f; }
+  .today-feed { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+  .today-feed li { padding: 8px 0; border-top: 1px solid rgba(127,127,127,.2); display: flex; gap: 10px; }
+  .today-feed li:first-child { border-top: 0; }
+  .today-feed .t { opacity: .6; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .auto-line { font-size: 13px; opacity: .8; }
+</style>
+
+<div class="page-stack">
+  <section class="panel">
+    <div class="section-eyebrow">{{ t("page_today") }}</div>
+    <p class="today-lede">
+      {% if today_data.action_count > 0 %}
+        {{ t("today_summary", count=today_data.action_count, uploads=today_data.uploads_yesterday) }}
+      {% else %}
+        {{ t("today_all_clear", uploads=today_data.uploads_yesterday) }}
+      {% endif %}
+    </p>
+  </section>
+
+  <div class="today-grid">
+    <div class="today-col">
+      {% if today_data.pending_applications > 0 %}
+      <section class="panel queue-item warn">
+        <div class="queue-count">{{ today_data.pending_applications }}</div>
+        <div class="queue-body">
+          <p class="queue-title">{{ t("today_apps_title") }}</p>
+          <p class="queue-sub">{{ t("today_apps_sub") }}</p>
+          <div class="queue-actions">
+            <a class="btn btn-primary" href="/portal/platform#tenant-applications">{{ t("today_btn_apps") }}</a>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if today_data.recovered_uploads > 0 or today_data.auth_failures > 0 %}
+      <section class="panel queue-item info">
+        <div class="queue-count">{{ today_data.recovered_uploads + today_data.auth_failures }}</div>
+        <div class="queue-body">
+          <p class="queue-title">{{ t("today_upload_issues_title") }}</p>
+          <p class="queue-sub">
+            {% if today_data.recovered_uploads > 0 %}{{ t("today_recovered_sub", count=today_data.recovered_uploads) }}{% endif %}
+            {% if today_data.auth_failures > 0 %} {{ t("today_auth_failed_sub", count=today_data.auth_failures) }}{% endif %}
+          </p>
+          <div class="queue-actions">
+            <a class="btn btn-primary" href="/portal/audit-logs">{{ t("today_btn_view_audit") }}</a>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if today_data.action_count == 0 %}
+      <section class="panel">
+        <p class="auto-line">{{ t("today_no_actions") }}</p>
+      </section>
+      {% endif %}
+
+      {# Client curation is currently dormant by design: the pending count
+         stays visible for the day it gets activated, but never as an alert. #}
+      {% if today_data.pending_recent > 0 or today_data.pending_backlog > 0 %}
+      <section class="panel queue-item">
+        <div class="queue-count">{{ today_data.pending_recent }}</div>
+        <div class="queue-body">
+          <p class="queue-title">{{ t("today_pending_title") }}</p>
+          <p class="queue-sub">{{ t("today_pending_backlog", count=today_data.pending_backlog) }}</p>
+          <div class="queue-actions">
+            <a class="btn btn-secondary" href="/portal/photos?approval_status=pending">{{ t("today_btn_review") }}</a>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      <div class="section-eyebrow">{{ t("today_section_automated") }}</div>
+      <section class="panel">
+        <p class="auto-line">
+          {% if today_data.queue_active == 0 %}✓ {{ t("today_auto_ok_queue") }}{% else %}⏳ {{ t("today_auto_queue_busy", count=today_data.queue_active) }}{% endif %}
+          &nbsp;·&nbsp;
+          {% if today_data.dead_letter_24h == 0 %}✓ {{ t("today_auto_dead_letter_ok") }}{% else %}⚠ {{ t("today_auto_dead_letter_bad", count=today_data.dead_letter_24h) }}{% endif %}
+          &nbsp;·&nbsp;
+          <a href="/portal?classic=1">{{ t("today_classic_link") }}</a>
+        </p>
+      </section>
+    </div>
+
+    <div class="today-col">
+      <div class="section-eyebrow">{{ t("today_section_pulse") }}</div>
+      <section class="panel">
+        {% if today_data.pulse %}
+        <table class="pulse-table">
+          {% for item in today_data.pulse %}
+          <tr>
+            <td class="pulse-proj" title="{{ item.project_name }}">{{ item.project_name }}</td>
+            <td>
+              <span class="spark">
+                {% for value in item.per_day %}<i {% if loop.last %}class="hot"{% endif %} style="height: {{ 3 + [value, 8]|min * 2 }}px"></i>{% endfor %}
+              </span>
+            </td>
+            <td class="pulse-num">{{ item.total_week }}</td>
+            <td>
+              {% if item.status == "stalled" %}<span class="status-pill stalled">{{ t("today_pulse_stalled", days=item.days_silent) }}</span>
+              {% elif item.status == "slowing" %}<span class="status-pill slowing">{{ t("today_pulse_slowing") }}</span>
+              {% else %}<span class="status-pill ok">{{ t("today_pulse_ok") }}</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% else %}
+        <p class="auto-line">{{ t("today_pulse_none") }}</p>
+        {% endif %}
+      </section>
+
+      <div class="section-eyebrow">{{ t("today_section_feed") }}</div>
+      <section class="panel">
+        {% if today_data.feed %}
+        <ul class="today-feed">
+          {% for log in today_data.feed %}
+          <li>
+            <span class="t">{{ log.created_at.strftime("%m-%d %H:%M") }}</span>
+            <span>{{ t("today_feed_" + log.action) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="auto-line">{{ t("today_feed_empty") }}</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

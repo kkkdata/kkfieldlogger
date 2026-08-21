@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_projects") }}</div>
+            <h2>{{ t("projects_create") }}</h2>
+            <p class="section-subtitle">{{ t("projects_workspace_copy") }}</p>
+        </div>
+    </section>
+
+    {% if can_create_projects %}
+    <section class="split-shell split-shell-single">
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("projects_create") }}</div>
+                    <h2>{{ t("projects_create") }}</h2>
+                </div>
+            </div>
+            <form method="post" action="/portal/projects" class="form-grid form-shell project-create-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label>{{ t("field_project_id") }}
+                    <input type="text" name="project_id" placeholder="12" required>
+                    <div class="muted small">{{ t("form_scoped_id_project_hint", company_code=company_code or "10000", example=company_scoped_example or "100000001") }}</div>
+                </label>
+                <label>{{ t("field_project_name") }}
+                    <input type="text" name="project_name" required>
+                </label>
+                <label>{{ t("field_client_name") }}
+                    <input type="text" name="client_name" required>
+                </label>
+                <label>{{ t("field_location") }}
+                    <input type="text" name="location" required>
+                </label>
+                <label>{{ t("field_status") }}
+                    <select name="status_value">
+                        <option value="active">{{ t("status_active") }}</option>
+                        <option value="on_hold">{{ t("status_on_hold") }}</option>
+                        <option value="completed">{{ t("status_completed") }}</option>
+                        <option value="archived">{{ t("status_archived") }}</option>
+                    </select>
+                </label>
+                <label style="grid-column: 1 / -1;">{{ t("field_image_video_ai_prompt") }}
+                    <textarea
+                        name="image_video_ai_prompt"
+                        rows="4"
+                        placeholder="{{ t('placeholder_image_video_ai_prompt') }}"
+                    ></textarea>
+                </label>
+                <label style="grid-column: 1 / -1;">{{ t("field_billing_receipt_ai_prompt") }}
+                    <textarea
+                        name="billing_receipt_ai_prompt"
+                        rows="4"
+                        placeholder="{{ t('placeholder_billing_receipt_ai_prompt') }}"
+                    ></textarea>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_create") }}</button>
+                </div>
+            </form>
+        </article>
+
+    </section>
+    {% endif %}
+
+    <section class="entity-grid">
+        {% for project in projects %}
+        <article class="entity-card">
+            <div class="entity-card-header">
+                <div>
+                    <div class="tag-row">
+                        <span class="tag">{{ project.project_id }}</span>
+                        <span class="tag">{{ t("status_" ~ project.status.value) }}</span>
+                    </div>
+                    <h3 class="entity-card-title">{{ project.project_name }}</h3>
+                </div>
+            </div>
+            <div class="entity-meta">
+                <div><strong>{{ project.client_name }}</strong></div>
+                <div class="muted">{{ project.location }}</div>
+            </div>
+            {% if project.image_video_ai_prompt or project.billing_receipt_ai_prompt %}
+            <div class="soft-divider"></div>
+            {% endif %}
+            {% if project.image_video_ai_prompt %}
+            <div class="entity-copy">
+                <strong>{{ t("field_image_video_ai_prompt") }}</strong><br>
+                {{ project.image_video_ai_prompt }}
+            </div>
+            {% endif %}
+            {% if project.billing_receipt_ai_prompt %}
+            <div class="entity-copy">
+                <strong>{{ t("field_billing_receipt_ai_prompt") }}</strong><br>
+                {{ project.billing_receipt_ai_prompt }}
+            </div>
+            {% endif %}
+            <div class="entity-actions">
+                <a class="btn btn-primary" href="/portal/projects/{{ project.project_id }}">{{ t("nav_projects") }}</a>
+                {% if can_manage_project_settings %}
+                <a class="btn btn-secondary" href="/portal/projects/{{ project.project_id }}/export">{{ t("btn_export_photo_pack") }}</a>
+                {% endif %}
+            </div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_projects") }}</article>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

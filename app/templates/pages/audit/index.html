@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>{{ t("audit_title") }}</h2>
+    </div>
+    <form method="get" class="form-grid">
+        <input type="hidden" name="page" value="1">
+        <label>{{ t("field_actor_username") }}
+            <input type="text" name="actor" value="{{ filters.actor }}">
+        </label>
+        <label>{{ t("field_action") }}
+            <input type="text" name="action" value="{{ filters.action }}">
+        </label>
+        <label>{{ t("field_project") }}
+            <select name="project_id">
+                <option value="">{{ t("field_all_projects") }}</option>
+                {% for project in projects %}
+                <option value="{{ project.project_id }}" {% if filters.project_id == project.project_id %}selected{% endif %}>{{ project.project_id }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>{{ t("field_start_date") }}
+            <input type="date" name="start_date" value="{{ filters.start_date }}">
+        </label>
+        <label>{{ t("field_end_date") }}
+            <input type="date" name="end_date" value="{{ filters.end_date }}">
+        </label>
+        <label>{{ t("field_items_per_page") }}
+            <select name="per_page">
+                {% for option in [50, 100, 200] %}
+                <option value="{{ option }}" {% if filters.per_page == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_filter_logs") }}</button>
+            <a class="btn btn-secondary" href="/portal/audit-logs">{{ t("btn_reset") }}</a>
+        </div>
+    </form>
+</section>
+
+<section class="panel audit-log-panel">
+    <div class="panel-header">
+        <div>
+            <h3>{{ t("audit_title") }}</h3>
+            <div class="muted small">
+                {{ t("audit_log_range_summary", start=pagination.start, end=pagination.end, total=pagination.total) }}
+            </div>
+        </div>
+        {% if pagination.total_pages > 1 %}
+        <div class="muted small">{{ t("audit_log_page_summary", page=pagination.page, total=pagination.total_pages) }}</div>
+        {% endif %}
+    </div>
+    <div class="audit-log-list">
+        {% for row in audit_rows %}
+        <article class="audit-log-card">
+            <div class="audit-log-main">
+                <div>
+                    <div class="section-eyebrow">{{ row.created_at|local_dt(timezone_name) }}</div>
+                    <h3>{{ row.action }}</h3>
+                    <div class="muted small">{{ t("table_actor") }}: {{ row.actor }} | {{ t("table_ip") }}: {{ row.ip_address }}</div>
+                </div>
+                <div class="tag-row audit-log-tags">
+                    <span class="tag">{{ t("table_target") }}: {{ row.target }}</span>
+                    <span class="tag">{{ t("table_project") }}: {{ row.project_id }}</span>
+                </div>
+            </div>
+            {% if row.detail_json %}
+            <details class="audit-detail-block">
+                <summary>
+                    <span>{{ t("audit_log_details_summary") }}:</span>
+                    <code>{{ row.detail_summary }}</code>
+                </summary>
+                <div class="muted small">{{ t("audit_log_details_raw") }}</div>
+                <pre>{{ row.detail_json }}</pre>
+            </details>
+            {% else %}
+            <div class="muted small">{{ t("table_details") }}: {{ t("meta_none") }}</div>
+            {% endif %}
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_logs") }}</article>
+        {% endfor %}
+    </div>
+    {% if pagination.total_pages > 1 %}
+    <div class="pagination-bar">
+        <div class="muted small">{{ t("audit_log_page_summary", page=pagination.page, total=pagination.total_pages) }}</div>
+        <div class="pagination-actions">
+            {% if pagination.has_prev %}
+            <a class="btn btn-secondary btn-small" href="{{ pagination.prev_url }}">{{ t("btn_previous") }}</a>
+            {% endif %}
+            {% if pagination.has_next %}
+            <a class="btn btn-secondary btn-small" href="{{ pagination.next_url }}">{{ t("btn_next") }}</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

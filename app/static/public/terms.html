@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="KK Field Logger 服务条款摘要。Terms summary.">
+    <title>条款 | KK Field Logger</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">服务条款</span><span class="lang-en">Terms of service</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+        <main class="plain-page">
+            <p class="eyebrow"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></p>
+            <h1><span class="lang-zh">请在授权范围内使用本系统。</span><span class="lang-en">Use the service for authorized field documentation.</span></h1>
+            <p class="lead">
+                <span class="lang-zh">工作区先审核后开通；公司管理员负责邀请授权用户并管理项目访问。</span><span class="lang-en">Workspaces are reviewed before activation. Company administrators are responsible for inviting authorized users and managing project access.</span>
+            </p>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">授权使用</span><span class="lang-en">Authorized use</span></h2>
+                <p><span class="lang-zh">本服务面向商业工程记录：现场媒体采集、审核流程和相关报告。请只上传你有权收集和分享的记录。</span><span class="lang-en">The service is for business field documentation: media collection, review workflows, and related reporting. Upload only records you are permitted to collect and share.</span></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">客户责任</span><span class="lang-en">Customer responsibility</span></h2>
+                <p><span class="lang-zh">工作区所有者负责用户权限、项目设置、内部制度、对客户的可见性决定，以及在采信 AI 输出前进行人工确认。</span><span class="lang-en">Workspace owners are responsible for user permissions, project setup, internal policies, client-visibility decisions, and confirming AI-assisted output before relying on it.</span></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">服务可用性</span><span class="lang-en">Service availability</span></h2>
+                <p><span class="lang-zh">我们尽力保持服务稳定，但维护、网络或基础设施事件可能造成波动。问题请通过支持页联系。</span><span class="lang-en">We work to keep the service reliable; maintenance, network, or infrastructure events may cause interruptions. Reach us through the support page.</span></p>
+            </section>
+        </main>
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            apply(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                apply(document.body.getAttribute("data-lang") === "zh" ? "en" : "zh");
+            });
+            function apply(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "条款 | KK Field Logger" : "Terms | KK Field Logger";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+                if (window.kkOnLangChange) { window.kkOnLangChange(next); }
+            }
+        })();
+    </script>
+</body>
+</html>

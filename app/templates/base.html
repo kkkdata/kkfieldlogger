@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title or system_settings["portal_title"] }}</title>
+    <link rel="icon" type="image/png" href="{{ system_settings['logo_path'] }}">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260515-dashboard-density-pass">
+    {% block extra_head %}{% endblock %}
+    <script defer src="/static/js/portal.js"></script>
+</head>
+<body>
+    <button class="mobile-nav-toggle" type="button" data-sidebar-toggle aria-controls="portal-sidebar" aria-expanded="false">
+        {{ t("btn_menu") }}
+    </button>
+    <div class="sidebar-scrim" data-sidebar-close hidden></div>
+    <div class="shell">
+        <aside class="sidebar" id="portal-sidebar" aria-label="Portal navigation">
+            <div class="brand">
+                <img src="{{ system_settings['logo_path'] }}" alt="K&K Data Service Inc. logo" class="brand-logo">
+                <div>
+                    <div class="brand-title">{{ system_settings["portal_title"] }}</div>
+                    <div class="brand-subtitle">{{ system_settings["company_name"] }}</div>
+                </div>
+            </div>
+                <nav class="nav">
+                    {% for section in nav_sections %}
+                    <div class="nav-section">
+                        {% if section["title"] %}
+                        <div class="nav-section-title">{{ section["title"] }}</div>
+                        {% endif %}
+                        {% for item in section["items"] %}
+                        <a href="{{ item["href"] }}" class="nav-link {% if request.url.path == item["href"] %}active{% endif %}">{{ item["label"] }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </nav>
+            <div class="sidebar-footer">
+                <div class="muted">{{ current_user.display_name }}</div>
+                <div class="muted small">{{ t("role_" ~ current_user.role.value) }}</div>
+                {% if app_settings.app_version != 'dev' %}
+                <div class="muted small">
+                    v{{ app_settings.app_version }}
+                    {% if 'beta' in app_settings.app_version %}
+                    · <a href="mailto:Michelle@kkdatasvc.com?subject=KK%20Field%20Logger%20beta%20feedback">{{ t("label_beta_feedback") }}</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <form method="post" action="/portal/language" class="form-stack">
+                    <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                    <label>
+                        {{ t("label_language") }}
+                        <select name="language" onchange="this.form.submit()">
+                            {% for code, label in language_options.items() %}
+                            <option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </form>
+                <form method="post" action="/portal/logout">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="btn btn-secondary full-width">{{ t("btn_sign_out") }}</button>
+                </form>
+            </div>
+        </aside>
+        <main class="content">
+            <div class="content-inner">
+            <header class="topbar">
+                <div class="topbar-intro">
+                    <div class="topbar-eyebrow">{{ current_user.display_name }} &middot; {{ t("role_" ~ current_user.role.value) }}</div>
+                    <h1>{{ page_title }}</h1>
+                    <div class="muted topbar-subtitle">{{ t("label_timezone_display", timezone=timezone_name) }}</div>
+                </div>
+            </header>
+
+            {% if flashes %}
+            <section class="flash-stack">
+                {% for item in flashes %}
+                <div class="flash flash-{{ item.level }}">{{ item.message }}</div>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <div class="image-modal" id="image-modal" hidden>
+        <div class="image-modal-backdrop" data-close-modal></div>
+        <div class="image-modal-panel modal-content" id="modal-panel">
+            <div class="modal-toolbar">
+                <button class="btn btn-secondary" type="button" data-image-prev>{{ t("btn_previous") }}</button>
+                <button class="btn btn-secondary" type="button" data-image-next>{{ t("btn_next") }}</button>
+                <button class="btn btn-secondary" type="button" data-zoom="-0.15">{{ t("btn_zoom_out") }}</button>
+                <button class="btn btn-secondary" type="button" data-zoom-reset>{{ t("btn_zoom_reset") }}</button>
+                <button class="btn btn-secondary" type="button" data-zoom="0.15">{{ t("btn_zoom_in") }}</button>
+                <button class="btn btn-secondary" type="button" data-fullscreen-toggle>{{ t("btn_fullscreen") }}</button>
+                <button class="modal-close" type="button" data-close-modal>{{ t("btn_close") }}</button>
+            </div>
+            <div class="image-preview-frame">
+                <img id="modal-image" class="image-preview" src="" alt="Preview">
+            </div>
+            <div class="modal-meta">
+                <div id="modal-title" class="modal-title"></div>
+                <div id="modal-info" class="muted"></div>
+            </div>
+        </div>
+    </div>
+    {% block after_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="KK Field Logger 产品状态。Product status.">
+    <title>产品状态 | KK Field Logger</title>
+    <link rel="icon" href="/static/img/kk-logo.png">
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        [data-lang="zh"] .lang-en { display: none; }
+        [data-lang="en"] .lang-zh { display: none; }
+        .lang-switch {
+            background: none; border: 1px solid currentColor; border-radius: 6px;
+            padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+        }
+    </style>
+</head>
+<body data-lang="zh">
+    <div class="public-shell">
+        <header class="public-header">
+            <a class="public-brand" href="/">
+                <img class="public-logo" src="/static/img/kk-logo.png" alt="K&K Data Service Inc. logo">
+                <span>
+                    <strong>KK Field Logger</strong>
+                    <small><span class="lang-zh">产品状态</span><span class="lang-en">Product status</span></small>
+                </span>
+            </a>
+            <nav class="public-nav" aria-label="Public navigation">
+                <a href="/"><span class="lang-zh">首页</span><span class="lang-en">Home</span></a>
+                <a href="/about"><span class="lang-zh">关于</span><span class="lang-en">About</span></a>
+                <a href="/privacy"><span class="lang-zh">隐私</span><span class="lang-en">Privacy</span></a>
+                <a href="/terms"><span class="lang-zh">条款</span><span class="lang-en">Terms</span></a>
+                <a href="/support"><span class="lang-zh">支持</span><span class="lang-en">Support</span></a>
+                <a href="/login"><span class="lang-zh">登录</span><span class="lang-en">Login</span></a>
+                <a class="nav-cta" href="/register"><span class="lang-zh">申请开通</span><span class="lang-en">Request access</span></a>
+                <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN</button>
+            </nav>
+        </header>
+        <main class="plain-page">
+            <p class="eyebrow"><span class="lang-zh">产品状态</span><span class="lang-en">Product status</span></p>
+            <h1><span class="lang-zh">当前版本支持什么。</span><span class="lang-en">What workspaces support today.</span></h1>
+            <p class="lead">
+                <span class="lang-zh">现场照片与视频上传、票据采集、经理审核、地图定位、批注评论、报告生成，以及 AI 辅助摘要。</span><span class="lang-en">Site photo and video upload, receipt capture, manager review, map view, comments and annotations, report generation, and AI-assisted summaries.</span>
+            </p>
+            <section class="plain-card">
+                <h2><span class="lang-zh">AI 输出仅作辅助</span><span class="lang-en">AI output is review support</span></h2>
+                <p>
+                    <span class="lang-zh">AI 摘要帮你整理证据、提示待跟进的问题；涉及安全、财务或客户的决定，请先人工确认。</span><span class="lang-en">AI summaries help organize evidence and flag follow-ups. Confirm them before safety, finance, or client decisions.</span>
+                </p>
+            </section>
+        </main>
+        <footer class="public-footer">
+            <span>K&amp;K Data Service Inc.</span>
+            <span>Michelle@kkdatasvc.com</span>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("kk-public-lang"); } catch (e) {}
+            var lang = saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+            apply(lang);
+            document.getElementById("langToggle").addEventListener("click", function () {
+                apply(document.body.getAttribute("data-lang") === "zh" ? "en" : "zh");
+            });
+            function apply(next) {
+                document.body.setAttribute("data-lang", next);
+                document.documentElement.setAttribute("lang", next === "zh" ? "zh-CN" : "en");
+                document.getElementById("langToggle").textContent = next === "zh" ? "EN" : "中文";
+                document.title = next === "zh" ? "产品状态 | KK Field Logger" : "Product Status | KK Field Logger";
+                try { localStorage.setItem("kk-public-lang", next); } catch (e) {}
+                if (window.kkOnLangChange) { window.kkOnLangChange(next); }
+            }
+        })();
+    </script>
+</body>
+</html>

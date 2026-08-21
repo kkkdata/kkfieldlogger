@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.camera-health-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.camera-health-panel {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    padding: 1rem;
+    background: #fff;
+}
+.camera-health-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #173a63;
+}
+.camera-health-attention {
+    border-color: #d28a1d;
+    box-shadow: 0 0 0 2px rgba(210, 138, 29, 0.12);
+}
+</style>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>{{ t("camera_health_dashboard_title") }}</h2>
+            <div class="muted">{{ t("camera_health_dashboard_copy") }}</div>
+        </div>
+        <a class="btn btn-secondary" href="/portal/ip-cameras">{{ t("btn_back_to_cameras") }}</a>
+    </div>
+</section>
+
+<section class="camera-health-dashboard">
+    <article class="camera-health-panel">
+        <div class="muted small">{{ t("label_camera_enabled_total") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.enabled_cameras }}/{{ camera_health_summary.total_cameras }}</div>
+    </article>
+    <article class="camera-health-panel">
+        <div class="muted small">{{ t("label_camera_online") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.online_cameras }}</div>
+    </article>
+    <article class="camera-health-panel">
+        <div class="muted small">{{ t("label_camera_offline") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.offline_cameras }}</div>
+    </article>
+    <article class="camera-health-panel">
+        <div class="muted small">{{ t("label_camera_error") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.error_cameras }}</div>
+    </article>
+    <article class="camera-health-panel camera-health-attention">
+        <div class="muted small">{{ t("label_camera_attention") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.attention_count }}</div>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("camera_health_attention_list_title") }}</h3>
+    </div>
+    <div class="card-grid">
+        {% for item in camera_health_summary["items"] %}
+        <article class="panel camera-health-attention">
+            <div><strong>{{ item.name }}</strong></div>
+            <div class="tag-row">
+                <span class="tag">{{ item.status }}</span>
+                <span class="tag">{{ item.protocol }}</span>
+                <span class="tag">{{ t("label_camera_consecutive_failures") }}: {{ item.consecutive_failures }}</span>
+            </div>
+            <div class="muted small">{{ item.error_log or t("meta_none") }}</div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_camera_attention") }}</article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("camera_health_recent_failures_title") }}</h3>
+    </div>
+    <div class="card-grid">
+        {% for item in camera_health_summary["recent_failures"] %}
+        <article class="panel">
+            <div><strong>{{ item.camera_name }}</strong></div>
+            <div class="muted small">{{ item.created_at or t("meta_none") }}</div>
+            <div class="tag-row">
+                <span class="tag">{{ item.action }}</span>
+            </div>
+            <div class="muted small">{{ item.error or t("meta_none") }}</div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("camera_health_recent_failures_empty") }}</article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,102 @@
+# ============================================================
+# KK Field Logger — TOS 7 multilingual file (kkfieldlogger.lang)
+# All 14 languages required; untranslated entries carry English.
+# ============================================================
+
+[en-us]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[zh-cn]
+name = "KK 现场影像记录"
+auth = "K&K Data Service Inc."
+descript = "面向工程与外勤团队的工地影像证据系统。工人手机拍照上传，每条记录自动带上项目、工号、GPS 和时间；经理在线审核、批注、审批并生成报告。完全运行在你自己的 NAS 上——证据数据不出你的硬盘。"
+release_note = "1. 测试版发布：照片/视频/票据采集、经理审核后台、外部后端 AI 辅助摘要、中英双语界面。"
+important = "测试版，免费使用。需要先从 TOS 应用中心安装并启用 DockerEngine。数据存放在所选存储卷的 DockerAppData 下，请定期备份。"
+
+[zh-hk]
+name = "KK 現場影像記錄"
+auth = "K&K Data Service Inc."
+descript = "面向工程與外勤團隊的工地影像證據系統。工人手機拍照上傳，每條記錄自動帶上項目、工號、GPS 和時間；經理在線審核、批註、審批並生成報告。完全運行在你自己的 NAS 上——證據數據不出你的硬盤。"
+release_note = "1. 測試版發佈：照片/視頻/票據採集、經理審核後台、外部後端 AI 輔助摘要、中英雙語界面。"
+important = "測試版，免費使用。需要先從 TOS 應用中心安裝並啟用 DockerEngine。數據存放在所選存儲卷的 DockerAppData 下，請定期備份。"
+
+[fr-fr]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[de-de]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[it-it]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[es-es]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Evidencia fotográfica de obra para equipos de construcción y campo. Los trabajadores suben fotos, video y recibos desde su teléfono; cada registro lleva el proyecto, el empleado, el GPS y la hora. Los gerentes revisan, anotan, aprueban y generan informes. Funciona por completo en tu NAS: la evidencia queda en tus propios discos."
+release_note = "1. Versión beta: captura de fotos/video/recibos, portal de revisión para gerentes, resúmenes asistidos por IA mediante backends externos, interfaz bilingüe (chino/inglés)."
+important = "Versión beta, de uso gratuito. Requiere DockerEngine instalado y habilitado desde el App Center de TOS. Los datos se guardan en DockerAppData del volumen seleccionado; realice copias de seguridad periódicas."
+
+[hu-hu]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[ja-jp]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[ko-kr]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[pl-pl]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[ru-ru]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[tr-tr]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."
+
+[pt-pt]
+name = "KK Field Logger"
+auth = "K&K Data Service Inc."
+descript = "Jobsite photo evidence for construction and field teams. Crews upload photos, video, and receipts from their phones; every record carries the project, employee, GPS, and time. Managers review, annotate, approve, and build reports. Runs entirely on your NAS - your evidence stays on your own drives."
+release_note = "1. Beta release: photo/video/receipt capture, manager review portal, AI-assisted summaries via external backends, bilingual (Chinese/English) interface."
+important = "Beta version, free to use. Requires DockerEngine installed and enabled from the TOS App Center. Data is stored under DockerAppData on the selected volume; keep regular backups."

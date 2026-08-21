@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_billing") }}</div>
+            <h2>{{ t("billing_title") }}</h2>
+            <p class="section-subtitle">{{ t("billing_workspace_copy") }}</p>
+        </div>
+    </section>
+
+    <section class="metric-grid">
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_current_plan") }}</span>
+            <strong>{{ billing_summary.plan_name }}</strong>
+        </article>
+        <article class="metric-card metric-card--quota">
+            <span class="metric-label">{{ t("dashboard_uploads_today_limit") }}</span>
+            <strong class="metric-value metric-value--quota">
+                <span class="metric-value-current">{{ billing_summary.uploads_today }}</span>
+                <span class="metric-value-separator">/</span>
+                <span class="metric-value-limit">{{ billing_summary.daily_upload_limit }}</span>
+            </strong>
+        </article>
+        <article class="metric-card metric-card--quota">
+            <span class="metric-label">{{ t("dashboard_monthly_usage") }}</span>
+            <strong class="metric-value metric-value--quota">
+                <span class="metric-value-current">{{ billing_summary.photos_this_month }}</span>
+                <span class="metric-value-separator">/</span>
+                <span class="metric-value-limit">{{ billing_summary.monthly_photo_limit }}</span>
+            </strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_billing_status") }}</span>
+            <strong>{{ t("status_" ~ billing_summary.billing_status) }}</strong>
+        </article>
+    </section>
+
+    <section class="split-shell split-shell-single">
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("billing_manage_subscription") }}</div>
+                    <h2>{{ t("billing_title") }}</h2>
+                </div>
+            </div>
+            <div class="photo-meta">
+                <div><strong>{{ t("field_plan") }}:</strong> {{ billing_summary.plan_name }}</div>
+                <div><strong>{{ t("field_billing_status") }}:</strong> {{ t("status_" ~ billing_summary.billing_status) }}</div>
+                <div><strong>{{ t("dashboard_uploads_today_limit") }}:</strong> {{ billing_summary.uploads_today }} / {{ billing_summary.daily_upload_limit }}</div>
+                <div><strong>{{ t("dashboard_monthly_usage") }}:</strong> {{ billing_summary.photos_this_month }} / {{ billing_summary.monthly_photo_limit }}</div>
+                <div><strong>{{ t("field_storage_usage") }}:</strong> {{ billing_summary.storage_used }} bytes{% if billing_summary.storage_limit_mb %} / {{ billing_summary.storage_limit_mb }} MB{% endif %}</div>
+                <div><strong>{{ t("field_provider") }}:</strong> {{ billing_summary.provider }}</div>
+            </div>
+            {% if can_manage %}
+            <form method="post" action="/portal/billing/subscription" class="form-grid form-shell" style="margin-top: 16px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label>{{ t("field_plan") }}
+                    <select name="plan_id">
+                        {% for plan in plans %}
+                        <option value="{{ plan.plan_id.value }}" {% if plan.plan_id.value == billing_summary.plan_id %}selected{% endif %}>{{ plan.display_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>{{ t("field_billing_status") }}
+                    <select name="billing_status">
+                        <option value="active" {% if billing_summary.billing_status == "active" %}selected{% endif %}>{{ t("status_active") }}</option>
+                        <option value="past_due" {% if billing_summary.billing_status == "past_due" %}selected{% endif %}>{{ t("status_past_due") }}</option>
+                        <option value="canceled" {% if billing_summary.billing_status == "canceled" %}selected{% endif %}>{{ t("status_canceled") }}</option>
+                    </select>
+                </label>
+                <label>{{ t("field_notes") }}
+                    <input type="text" name="notes" value="">
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_update") }}</button>
+                </div>
+            </form>
+            {% else %}
+            <div class="dashboard-note-list" style="margin-top: 16px;">
+                <article class="dashboard-note-card">
+                    <strong>{{ t("billing_read_only_title") }}</strong>
+                    <div class="muted">{{ t("billing_read_only_platform_hint") }}</div>
+                </article>
+            </div>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="panel table-panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("billing_plan_catalog") }}</div>
+                <h2>{{ t("billing_plan_catalog") }}</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ t("table_plan") }}</th>
+                        <th>{{ t("field_price") }}</th>
+                        <th>{{ t("field_daily_limit") }}</th>
+                        <th>{{ t("field_monthly_limit") }}</th>
+                        <th>{{ t("field_storage_usage") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan.display_name }}</td>
+                        <td>${{ "%.2f"|format(plan.monthly_price_cents / 100) }}</td>
+                        <td>{{ plan.daily_upload_limit }}</td>
+                        <td>{{ plan.monthly_photo_limit }}</td>
+                        <td>{{ plan.storage_limit_mb or "-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

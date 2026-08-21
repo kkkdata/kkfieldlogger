@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_platform") }}</div>
+            <h2>{{ t("platform_title") }}</h2>
+            <p class="section-subtitle">{{ t("platform_workspace_copy") }}</p>
+        </div>
+        <div class="dashboard-note-list platform-summary-grid">
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_applications") }}</strong>
+                <div class="muted">{{ applications|length }} {{ t("status_pending")|lower }}</div>
+            </article>
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_tenants") }}</strong>
+                <div class="muted">{{ tenant_total_count }} {{ t("table_tenant")|lower }}</div>
+            </article>
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_reviewed_label") }}</strong>
+                <div class="muted">{{ reviewed_application_count }}</div>
+            </article>
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_camera_reviews") }}</strong>
+                <div class="muted">{{ pending_camera_reviews|length }} {{ t("status_pending")|lower }}</div>
+            </article>
+        </div>
+    </section>
+
+    <section class="panel platform-create-company-panel" id="tenant-create-company">
+        <details class="platform-create-details" {% if not applications %}open{% endif %}>
+        <summary>
+            <div>
+                <div class="section-eyebrow">{{ t("platform_create_company") }}</div>
+                <h2>{{ t("platform_create_company") }}</h2>
+                <div class="section-subtitle">{{ t("platform_create_company_copy") }}</div>
+            </div>
+            <span class="tag">{{ t("btn_open_company") }}</span>
+        </summary>
+        <form method="post" action="/portal/platform/companies" class="form-grid form-shell">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+            <label>{{ t("field_company_name") }}
+                <input type="text" name="company_name" required>
+            </label>
+            <label>{{ t("field_company_id_optional") }}
+                <input type="text" name="company_id" placeholder="granite-builders">
+            </label>
+            <label>{{ t("field_company_code") }}
+                <input type="text" name="company_code" placeholder="10001" maxlength="5" inputmode="numeric">
+            </label>
+            <label>{{ t("field_plan") }}
+                <select name="plan_id">
+                    {% for plan in plans %}
+                    <option value="{{ plan.plan_id.value }}">{{ plan.display_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>{{ t("field_admin_display_name") }}
+                <input type="text" name="display_name" required>
+            </label>
+            <label>{{ t("field_admin_email") }}
+                <input type="email" name="email" required>
+            </label>
+            <label>{{ t("field_admin_username_optional") }}
+                <input type="text" name="username" placeholder="granite-owner">
+            </label>
+            <label>{{ t("field_temp_password_optional") }}
+                <input type="text" name="password" placeholder="{{ t('platform_generated_password_hint') }}">
+            </label>
+            <div class="dashboard-note-list" style="grid-column: 1 / -1;">
+                <article class="dashboard-note-card">
+                    <strong>{{ t("field_company_code") }}</strong>
+                    <div class="muted">{{ t("platform_company_code_hint") }}</div>
+                </article>
+                <article class="dashboard-note-card">
+                    <strong>{{ t("field_role") }}</strong>
+                    <div class="muted">{{ t("platform_company_admin_hint") }}</div>
+                </article>
+            </div>
+            <div class="form-actions" style="grid-column: 1 / -1;">
+                <button type="submit" class="btn btn-primary">{{ t("btn_open_company") }}</button>
+            </div>
+        </form>
+        </details>
+    </section>
+
+    <section class="panel" id="tenant-applications">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("platform_applications") }}</div>
+                <h2>{{ t("platform_applications") }}</h2>
+                <div class="section-subtitle">{{ t("platform_applications_copy") }}</div>
+            </div>
+            {% if reviewed_application_count %}
+            <div class="muted small">{{ t("platform_reviewed_summary", count=reviewed_application_count) }}</div>
+            {% endif %}
+        </div>
+        <div class="dashboard-note-list">
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_next_step_company_admin") }}</strong>
+                <div class="muted">{{ t("platform_next_step_company_admin_copy") }}</div>
+            </article>
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_next_step_project_manager") }}</strong>
+                <div class="muted">{{ t("platform_next_step_project_manager_copy") }}</div>
+            </article>
+            <article class="dashboard-note-card">
+                <strong>{{ t("platform_next_step_employee") }}</strong>
+                <div class="muted">{{ t("platform_next_step_employee_copy") }}</div>
+            </article>
+        </div>
+        <div class="platform-application-stack">
+            {% for application in applications %}
+            <article class="panel platform-application-card">
+                <div class="platform-application-grid">
+                    <div class="platform-application-copy">
+                        <div class="section-eyebrow">{{ application.company_name }}</div>
+                        <h3>{{ application.contact_name }}</h3>
+                        <p class="muted">{{ application.contact_email }}</p>
+                        {% if application.contact_phone %}
+                        <p class="muted">{{ application.contact_phone }}</p>
+                        {% endif %}
+                        {% if application.contact_title %}
+                        <div class="thumb-badge" style="position:static; display:inline-flex; margin-top:0.4rem;">{{ application.contact_title }}</div>
+                        {% endif %}
+                        <div class="platform-meta-list">
+                            {% if application.requested_company_id %}
+                            <div><strong>{{ t("field_company_id_optional") }}:</strong> {{ application.requested_company_id }}</div>
+                            {% endif %}
+                            {% if application.requested_company_code %}
+                            <div><strong>{{ t("field_company_code") }}:</strong> {{ application.requested_company_code }}</div>
+                            {% endif %}
+                            {% if application.website_url %}
+                            <div><strong>{{ t("field_website") }}:</strong> {{ application.website_url }}</div>
+                            {% endif %}
+                            <div><strong>{{ t("table_created") }}:</strong> {{ application.created_at|local_dt(timezone_name) }}</div>
+                        </div>
+                        <div class="platform-application-intro">{{ application.company_intro }}</div>
+                    </div>
+                    <div class="platform-application-actions">
+                        <form method="post" action="/portal/platform/applications/{{ application.id }}/approve" class="form-stack">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+                            <label>
+                                {{ t("field_plan") }}
+                                <select name="plan_id">
+                                    {% for plan in plans %}
+                                    <option value="{{ plan.plan_id.value }}">{{ plan.display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label>
+                                {{ t("field_notes") }}
+                                <textarea name="review_notes" rows="3" placeholder="{{ t('platform_review_notes_hint') }}"></textarea>
+                            </label>
+                            <button type="submit" class="btn btn-primary">{{ t("btn_approve") }}</button>
+                        </form>
+                        <form method="post" action="/portal/platform/applications/{{ application.id }}/reject" class="form-stack">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+                            <label>
+                                {{ t("field_notes") }}
+                                <textarea name="review_notes" rows="3" placeholder="{{ t('platform_reject_notes_hint') }}"></textarea>
+                            </label>
+                            <button type="submit" class="btn btn-secondary">{{ t("platform_btn_reject_application") }}</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+            {% else %}
+            <article class="panel empty-panel">
+                <div class="empty">{{ t("platform_no_applications") }}</div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("platform_camera_reviews") }}</div>
+                <h2>{{ t("platform_camera_reviews") }}</h2>
+                <div class="section-subtitle">{{ t("platform_camera_reviews_copy") }}</div>
+            </div>
+        </div>
+        <div class="platform-application-stack">
+            {% for camera in pending_camera_reviews %}
+            <article class="panel platform-application-card">
+                <div class="platform-application-grid">
+                    <div class="platform-application-copy">
+                        <div class="section-eyebrow">{{ camera.company_name }}</div>
+                        <h3>{{ camera.name }}</h3>
+                        <p class="muted">{{ camera.owner_email }}</p>
+                        <div class="platform-meta-list">
+                            <div><strong>{{ t("table_tenant") }}:</strong> {{ camera.company_id }}</div>
+                            {% if camera.company_code %}
+                            <div><strong>{{ t("field_company_code") }}:</strong> {{ camera.company_code }}</div>
+                            {% endif %}
+                            <div><strong>{{ t("field_admin_username") }}:</strong> {{ camera.owner_username }}</div>
+                            <div><strong>{{ t("field_camera_protocol") }}:</strong> {{ camera.protocol }}</div>
+                            <div><strong>{{ t("field_camera_stream_url") }}:</strong> {{ camera.stream_url }}</div>
+                            <div><strong>{{ t("field_camera_enabled") }}:</strong> {{ t("label_yes") if camera.is_enabled else t("label_no") }}</div>
+                            <div><strong>{{ t("table_status") }}:</strong> {{ camera.status_label }}</div>
+                            <div><strong>{{ t("field_last_check_at") }}:</strong> {{ camera.last_check_at|local_dt(timezone_name) if camera.last_check_at else t("meta_none") }}</div>
+                            <div><strong>{{ t("label_camera_consecutive_failures") }}:</strong> {{ camera.consecutive_failures }}</div>
+                            <div><strong>{{ t("table_created") }}:</strong> {{ camera.created_at|local_dt(timezone_name) }}</div>
+                        </div>
+                        <div class="platform-application-intro">
+                            {% if camera.error_log %}
+                            <strong>{{ t("field_error_log") }}:</strong> {{ camera.error_log }}
+                            {% else %}
+                            {{ t("platform_camera_review_ready_copy") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="platform-application-actions">
+                        <form method="post" action="/portal/platform/ip-cameras/{{ camera.id }}/approve" class="form-stack">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+                            <label>
+                                {{ t("field_notes") }}
+                                <textarea name="review_notes" rows="3" placeholder="{{ t('platform_camera_review_approve_hint') }}"></textarea>
+                            </label>
+                            <button type="submit" class="btn btn-primary">{{ t("platform_btn_approve_camera") }}</button>
+                        </form>
+                        <form method="post" action="/portal/platform/ip-cameras/{{ camera.id }}/reject" class="form-stack">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+                            <label>
+                                {{ t("field_notes") }}
+                                <textarea name="review_notes" rows="3" placeholder="{{ t('platform_camera_review_reject_hint') }}"></textarea>
+                            </label>
+                            <button type="submit" class="btn btn-secondary">{{ t("platform_btn_reject_camera") }}</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+            {% else %}
+            <article class="panel empty-panel">
+                <div class="empty">{{ t("platform_no_camera_reviews") }}</div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel table-panel" id="tenant-list">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("platform_tenants") }}</div>
+                <h2>{{ t("platform_tenants") }}</h2>
+                <div class="section-subtitle">{{ t("platform_tenants_copy") }}</div>
+            </div>
+        </div>
+        <form method="get" action="/portal/platform" class="platform-toolbar">
+            <label class="platform-search-field">
+                <span class="muted small">{{ t("field_search") }}</span>
+                <input type="text" name="q" value="{{ tenant_query }}" placeholder="{{ t('platform_search_tenants_placeholder') }}">
+            </label>
+            <div class="platform-toolbar-actions">
+                <button type="submit" class="btn btn-secondary">{{ t("btn_search") }}</button>
+                {% if tenant_query %}
+                <a class="btn btn-secondary" href="/portal/platform">{{ t("btn_clear_filters") }}</a>
+                {% endif %}
+            </div>
+        </form>
+        <div class="platform-pagination-meta">
+            <div class="muted small">
+                {{ t("platform_tenant_range_summary", start=tenant_range_start, end=tenant_range_end, total=tenant_total_count) }}
+            </div>
+            {% if tenant_total_pages > 1 %}
+            <div class="muted small">{{ t("platform_page_summary", page=tenant_page, total=tenant_total_pages) }}</div>
+            {% endif %}
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ t("table_tenant") }}</th>
+                        <th>{{ t("field_company_name") }}</th>
+                        <th>{{ t("field_company_code") }}</th>
+                        <th>{{ t("field_admin_username") }}</th>
+                        <th>{{ t("field_admin_email") }}</th>
+                        <th>{{ t("table_photos") }}</th>
+                        <th>{{ t("table_videos") }}</th>
+                        <th>{{ t("table_employees") }}</th>
+                        <th>{{ t("table_activity") }}</th>
+                        <th>{{ t("table_created") }}</th>
+                        <th>{{ t("table_status") }}</th>
+                        <th>{{ t("table_plan") }}</th>
+                        <th>{{ t("table_billing") }}</th>
+                        <th>{{ t("table_actions") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tenant in tenants %}
+                    <tr>
+                        <td><strong>{{ tenant.slug }}</strong></td>
+                        <td>{{ tenant.name }}</td>
+                        <td>{{ tenant.company_code or "-" }}</td>
+                        <td>{{ tenant.owner_username }}</td>
+                        <td>{{ tenant.owner_email }}</td>
+                        <td>{{ tenant.photo_count }}</td>
+                        <td>{{ tenant.video_count }}</td>
+                        <td>{{ tenant.employee_count }}</td>
+                        <td>
+                            <strong>{{ tenant.activity["label"] }}</strong>
+                            <div class="muted small">{{ tenant.activity["copy"] }}</div>
+                        </td>
+                        <td>{{ tenant.created_at|local_dt(timezone_name) }}</td>
+                        <td>{{ tenant.status }}</td>
+                        <td>{{ tenant.plan_name }}</td>
+                        <td>{{ tenant.billing_status }}</td>
+                        <td>
+                            <div class="platform-row-actions">
+                                <form method="post" action="/portal/platform/tenants/{{ tenant.slug }}/status" class="form-stack">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+                                    <input type="hidden" name="tenant_status" value="{% if tenant.status == 'suspended' %}active{% else %}suspended{% endif %}">
+                                    <button type="submit" class="btn btn-secondary btn-small">
+                                        {% if tenant.status == "suspended" %}
+                                        {{ t("platform_btn_resume_tenant") }}
+                                        {% else %}
+                                        {{ t("platform_btn_suspend_tenant") }}
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                {% if tenant.can_delete %}
+                                <details class="platform-danger-details">
+                                    <summary class="btn btn-danger btn-small">{{ t("platform_btn_delete_tenant") }}</summary>
+                                    <form method="post" action="/portal/platform/tenants/{{ tenant.slug }}/delete" class="form-stack platform-danger-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input type="hidden" name="next_url" value="{{ platform_current_url }}">
+                                        <label>
+                                            {{ t("platform_confirm_tenant_delete") }}
+                                            <input type="text" name="confirm_slug" placeholder="{{ tenant.slug }}" required>
+                                        </label>
+                                        <div class="muted small">{{ t("platform_delete_tenant_copy") }}</div>
+                                        <button type="submit" class="btn btn-danger btn-small">{{ t("platform_btn_delete_tenant_forever") }}</button>
+                                    </form>
+                                </details>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="14" class="empty">{{ t("platform_no_tenants") }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if tenant_total_pages > 1 %}
+        <div class="pagination-bar">
+            <div class="muted small">{{ t("platform_page_summary", page=tenant_page, total=tenant_total_pages) }}</div>
+            <div class="pagination-actions">
+                {% if tenant_prev_url %}
+                <a class="btn btn-secondary btn-small" href="{{ tenant_prev_url }}">{{ t("btn_previous") }}</a>
+                {% endif %}
+                {% if tenant_next_url %}
+                <a class="btn btn-secondary btn-small" href="{{ tenant_next_url }}">{{ t("btn_next") }}</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

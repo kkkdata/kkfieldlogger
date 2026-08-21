@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack dashboard-shell">
+    {% if dashboard_mode == "platform" %}
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_dashboard") }}</div>
+            <h2>{{ t("dashboard_platform_title") }}</h2>
+            <p class="section-subtitle">{{ t("dashboard_platform_hero_copy") }}</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="/portal/platform">{{ t("nav_platform") }}</a>
+                <a class="btn btn-secondary" href="/portal/billing">{{ t("nav_billing") }}</a>
+                <a class="btn btn-secondary" href="/portal/ai-backends">{{ t("nav_ai_backends") }}</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="metric-grid dashboard-metric-grid">
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_tenant_workspaces") }}</span>
+            <strong>{{ platform_dashboard.tenant_count }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_active_tenants") }}</span>
+            <strong>{{ platform_dashboard.active_tenants }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_suspended_tenants") }}</span>
+            <strong>{{ platform_dashboard.suspended_tenants }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_pending_applications") }}</span>
+            <strong>{{ platform_dashboard.pending_applications }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_failed_jobs") }}</span>
+            <strong>{{ platform_dashboard.failed_jobs }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_total_photos") }}</span>
+            <strong>{{ total_photos }}</strong>
+        </article>
+    </section>
+
+    <section class="dashboard-summary-grid">
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("dashboard_platform_operations") }}</div>
+                    <h2>{{ t("dashboard_platform_operations") }}</h2>
+                    <div class="section-subtitle">{{ t("dashboard_platform_operations_copy") }}</div>
+                </div>
+            </div>
+            <div class="dashboard-note-list">
+                <article class="dashboard-note-card">
+                    <strong>{{ t("dashboard_platform_action_review") }}</strong>
+                    <div class="muted">{{ t("dashboard_platform_action_review_copy") }}</div>
+                </article>
+                <article class="dashboard-note-card">
+                    <strong>{{ t("dashboard_platform_action_support") }}</strong>
+                    <div class="muted">{{ t("dashboard_platform_action_support_copy") }}</div>
+                </article>
+                <article class="dashboard-note-card">
+                    <strong>{{ t("dashboard_platform_action_health") }}</strong>
+                    <div class="muted">{{ t("dashboard_platform_action_health_copy") }}</div>
+                </article>
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("dashboard_platform_inspection") }}</div>
+                    <h2>{{ t("dashboard_platform_inspection") }}</h2>
+                    <div class="section-subtitle">{{ t("dashboard_platform_inspection_copy") }}</div>
+                </div>
+            </div>
+            <div class="dashboard-note-list">
+                <article class="dashboard-note-card">
+                    <strong>{{ t("nav_photos") }}</strong>
+                    <div class="muted">{{ t("dashboard_platform_inspect_photos_copy") }}</div>
+                </article>
+                <article class="dashboard-note-card">
+                    <strong>{{ t("nav_reports") }}</strong>
+                    <div class="muted">{{ t("dashboard_platform_inspect_reports_copy") }}</div>
+                </article>
+                <article class="dashboard-note-card">
+                    <strong>{{ t("copilot_title") }}</strong>
+                    <div class="muted">{{ t("dashboard_platform_inspect_copilot_copy") }}</div>
+                </article>
+            </div>
+        </article>
+    </section>
+
+    <section class="chart-grid">
+        <article class="chart-card">
+            <div class="panel-header">
+                <h2>{{ t("dashboard_recent_applications") }}</h2>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t("field_company_name") }}</th>
+                            <th>{{ t("field_contact_name") }}</th>
+                            <th>{{ t("field_contact_email") }}</th>
+                            <th>{{ t("table_status") }}</th>
+                            <th>{{ t("table_created") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in platform_dashboard.latest_applications %}
+                        <tr>
+                            <td><strong>{{ application.company_name }}</strong></td>
+                            <td>{{ application.contact_name }}</td>
+                            <td>{{ application.contact_email }}</td>
+                            <td>{{ t("status_" ~ application.status.value) }}</td>
+                            <td>{{ application.created_at|local_dt(timezone_name) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="empty">{{ t("platform_no_applications") }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="chart-card">
+            <div class="panel-header">
+                <h2>{{ t("dashboard_newest_tenants") }}</h2>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t("table_tenant") }}</th>
+                            <th>{{ t("field_company_name") }}</th>
+                            <th>{{ t("table_plan") }}</th>
+                            <th>{{ t("table_status") }}</th>
+                            <th>{{ t("table_created") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tenant in platform_dashboard.latest_tenants %}
+                        <tr>
+                            <td><strong>{{ tenant.slug }}</strong></td>
+                            <td>{{ tenant.name }}</td>
+                            <td>{{ tenant.current_plan_id.value if tenant.current_plan_id else "-" }}</td>
+                            <td>{{ t("status_" ~ tenant.status.value) }}</td>
+                            <td>{{ tenant.created_at|local_dt(timezone_name) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="empty">{{ t("platform_no_tenants") }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+    {% else %}
+    <section class="panel hero-panel">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_dashboard") }}</div>
+            <h2>{{ t("dashboard_workspace_overview") }}</h2>
+            <p class="section-subtitle">{{ t("dashboard_operator_copy") }}</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="/portal/photos">{{ t("nav_photos") }}</a>
+                <a class="btn btn-secondary" href="/portal/reports">{{ t("nav_reports") }}</a>
+                <a class="btn btn-secondary" href="/portal/copilot">{{ t("copilot_title") }}</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="metric-grid dashboard-metric-grid">
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_photos_today") }}</span>
+            <strong>{{ photos_today }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_total_photos") }}</span>
+            <strong>{{ total_photos }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_active_projects") }}</span>
+            <strong>{{ active_projects }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_pending_approvals") }}</span>
+            <strong>{{ pending_approvals }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_active_workers") }}</span>
+            <strong>{{ active_workers }}</strong>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">{{ t("dashboard_invoices_today") }}</span>
+            <strong>{{ invoices_today }}</strong>
+        </article>
+    </section>
+
+    <section class="dashboard-summary-grid dashboard-summary-grid-single">
+        <article class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="section-eyebrow">{{ t("dashboard_plan_usage") }}</div>
+                    <h2>{{ t("dashboard_plan_usage") }}</h2>
+                </div>
+            </div>
+            <div class="dashboard-usage-grid">
+                <article class="metric-card">
+                    <span class="metric-label">{{ t("dashboard_current_plan") }}</span>
+                    <strong>{{ billing_summary.plan_name }}</strong>
+                </article>
+                <article class="metric-card metric-card--quota">
+                    <span class="metric-label">{{ t("dashboard_uploads_today_limit") }}</span>
+                    <strong class="metric-value metric-value--quota">
+                        <span class="metric-value-current">{{ billing_summary.uploads_today }}</span>
+                        <span class="metric-value-separator">/</span>
+                        <span class="metric-value-limit">{{ billing_summary.daily_upload_limit }}</span>
+                    </strong>
+                </article>
+                <article class="metric-card metric-card--quota">
+                    <span class="metric-label">{{ t("dashboard_monthly_usage") }}</span>
+                    <strong class="metric-value metric-value--quota">
+                        <span class="metric-value-current">{{ billing_summary.photos_this_month }}</span>
+                        <span class="metric-value-separator">/</span>
+                        <span class="metric-value-limit">{{ billing_summary.monthly_photo_limit }}</span>
+                    </strong>
+                </article>
+                <article class="metric-card">
+                    <span class="metric-label">{{ t("dashboard_billing_status") }}</span>
+                    <strong>{{ t("status_" ~ billing_summary.billing_status) }}</strong>
+                </article>
+            </div>
+        </article>
+    </section>
+
+    <section class="chart-grid">
+        <article class="chart-card">
+            <div class="panel-header">
+                <h2>{{ t("dashboard_uploads_over_time") }}</h2>
+            </div>
+            <div class="bar-list">
+                {% set max_count = (uploads_over_time | map(attribute='count') | max) if uploads_over_time else 1 %}
+                {% for point in uploads_over_time %}
+                <div class="bar-row">
+                    <span class="muted small">{{ point.label }}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: {{ ((point.count / (max_count or 1)) * 100) | round(1) }}%"></div>
+                    </div>
+                    <strong>{{ point.count }}</strong>
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="chart-card">
+            <div class="panel-header">
+                <h2>{{ t("dashboard_project_comparison") }}</h2>
+            </div>
+            <div class="bar-list">
+                {% set project_max = (project_comparison | map(attribute='photo_count') | max) if project_comparison else 1 %}
+                {% for item in project_comparison %}
+                <div class="bar-row">
+                    <span class="muted small">{{ item.project_id }}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: {{ ((item.photo_count / (project_max or 1)) * 100) | round(1) }}%"></div>
+                    </div>
+                    <strong>{{ item.photo_count }}</strong>
+                </div>
+                {% else %}
+                <div class="empty">{{ t("empty_no_project_data") }}</div>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    <section class="panel table-panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("dashboard_recent_uploads") }}</div>
+                <h2>{{ t("dashboard_recent_uploads") }}</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ t("table_id") }}</th>
+                        <th>{{ t("table_type") }}</th>
+                        <th>{{ t("table_project") }}</th>
+                        <th>{{ t("table_employee") }}</th>
+                        <th>{{ t("table_approval") }}</th>
+                        <th>{{ t("table_captured") }}</th>
+                        <th>{{ t("table_visibility") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for photo in recent_uploads %}
+                    <tr>
+                        <td>{{ photo.id }}</td>
+                        <td>{{ photo.photo_type.value }}</td>
+                        <td>{{ photo.project_id or "-" }}</td>
+                        <td>{{ photo.employee_id }}</td>
+                        <td>{{ t("status_" ~ photo.approval_status.value) }}</td>
+                        <td>{{ photo.captured_at_utc|local_dt(timezone_name) }}</td>
+                        <td>{{ t("status_" ~ photo.visibility.value) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="empty">{{ t("empty_no_uploads") }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

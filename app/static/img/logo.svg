@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">K&amp;K Data Service Inc.</title>
+  <desc id="desc">KK Field Logger Portal logo</desc>
+  <defs>
+    <linearGradient id="g" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#173656"/>
+      <stop offset="100%" stop-color="#2a5b8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#g)"/>
+  <path d="M30 28h14v25l22-25h18L58 56l28 44H69L48 66l-4 5v29H30V28z" fill="#ffffff"/>
+  <path d="M75 28h14v25l9-10h18L98 59l19 41h-16L88 72l-13 14v14H61V28h14z" fill="#d9e8f5" opacity="0.85"/>
+</svg>

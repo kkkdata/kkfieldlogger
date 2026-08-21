@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kk-field-logger"
+version = "0.1.0"
+description = "KK Field Logger backend and management portal"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.14,<2.0",
+    "email-validator>=2.2,<3.0",
+    "fastapi>=0.115,<1.0",
+    "itsdangerous>=2.2,<3.0",
+    "jinja2>=3.1,<4.0",
+    "markdown>=3.7,<4.0",
+    "passlib[bcrypt]>=1.7,<2.0",
+    "pillow>=11.0,<12.0",
+    "pgvector>=0.3,<1.0",
+    "psutil>=7.0,<8.0",
+    "psycopg[binary]>=3.2,<4.0",
+    "pydantic-settings>=2.8,<3.0",
+    "python-multipart>=0.0.20,<1.0",
+    "requests>=2.32,<3.0",
+    "sqlalchemy>=2.0,<3.0",
+    "structlog>=25.4,<26.0",
+    "tzdata>=2025.2",
+    "uvicorn[standard]>=0.34,<1.0",
+    "weasyprint>=66,<67",
+]
+
+[project.optional-dependencies]
+# In-image AI: voice transcription (faster-whisper) and video keyframe
+# extraction (opencv). Vision-model analysis talks to external backends
+# (Ollama etc.) over HTTP and does not need these. Both import sites are
+# guarded, so the app degrades gracefully without this extra (~450MB).
+ai = [
+    "faster-whisper>=1.1,<2.0",
+    "opencv-python-headless>=4.10,<5.0",
+]
+dev = [
+    "httpx>=0.28,<1.0",
+    "pytest>=8.3,<9.0",
+    "pytest-cov>=6.0,<7.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

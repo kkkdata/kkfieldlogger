@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.camera-health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.camera-health-card {
+    border: 1px solid #d7dfeb;
+    border-radius: 16px;
+    padding: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+.camera-health-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #173a63;
+}
+.camera-card-attention {
+    border-color: #d28a1d;
+    box-shadow: 0 0 0 2px rgba(210, 138, 29, 0.12);
+}
+</style>
+<section class="panel hero-panel">
+    <div class="hero-copy">
+        <div class="section-eyebrow">{{ t("page_ip_cameras") }}</div>
+        <h2>{{ t("ip_cameras_title") }}</h2>
+        <p class="section-subtitle">{{ t("ip_cameras_manage_copy") }}</p>
+        <div class="hero-actions">
+            <a class="btn btn-secondary" href="/portal/ip-cameras/health">{{ t("btn_open_camera_health") }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="camera-health-grid">
+    <article class="camera-health-card">
+        <div class="muted small">{{ t("label_camera_enabled_total") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.enabled_cameras }}/{{ camera_health_summary.total_cameras }}</div>
+    </article>
+    <article class="camera-health-card">
+        <div class="muted small">{{ t("camera_approval_pending") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.pending_review_cameras }}</div>
+    </article>
+    <article class="camera-health-card">
+        <div class="muted small">{{ t("camera_approval_approved") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.approved_cameras }}</div>
+    </article>
+    <article class="camera-health-card">
+        <div class="muted small">{{ t("label_camera_attention") }}</div>
+        <div class="camera-health-value">{{ camera_health_summary.attention_count }}</div>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h3>{{ t("ip_cameras_bulk_actions") }}</h3>
+            <div class="muted small">{{ t("ip_cameras_bulk_test_copy") }}</div>
+        </div>
+    </div>
+    <form method="post" action="/portal/ip-cameras/bulk" class="form-grid" id="camera-bulk-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>
+            <input type="checkbox" id="camera-select-all"> {{ t("btn_select_all_cameras") }}
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" name="bulk_action" value="enable">{{ t("btn_enable_selected_cameras") }}</button>
+            <button type="submit" class="btn btn-secondary" name="bulk_action" value="disable">{{ t("btn_disable_selected_cameras") }}</button>
+            <button type="submit" class="btn btn-secondary" name="bulk_action" value="test">{{ t("btn_test_selected_cameras") }}</button>
+            <button type="submit" class="btn btn-danger" name="bulk_action" value="delete">{{ t("btn_delete_selected_cameras") }}</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h3>{{ t("ip_cameras_new") }}</h3>
+            <div class="muted small">{{ t("ip_cameras_review_copy") }}</div>
+        </div>
+    </div>
+    <form method="post" action="/portal/ip-cameras" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>{{ t("field_camera_name") }}
+            <input type="text" name="name" required>
+        </label>
+        <label>{{ t("field_camera_protocol") }}
+            <select name="protocol">
+                {% for protocol in camera_protocols %}
+                <option value="{{ protocol }}">{{ protocol }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>{{ t("field_camera_stream_url") }}
+            <input type="text" name="stream_url" placeholder="rtsp://..." required>
+        </label>
+        <label>
+            <input type="checkbox" name="is_enabled" checked> {{ t("field_camera_enabled") }}
+        </label>
+        <div class="dashboard-note-list" style="grid-column: 1 / -1;">
+            <article class="dashboard-note-card">
+                <strong>{{ t("camera_approval_pending") }}</strong>
+                <div class="muted">{{ t("ip_cameras_review_flow_copy") }}</div>
+            </article>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_create") }}</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("ip_cameras_saved") }}</h3>
+    </div>
+    <div class="card-grid">
+        {% for camera in cameras %}
+        <article class="panel {% if camera.is_enabled and camera.status.value in ['offline', 'error'] and camera.approval_status.value == 'approved' %}camera-card-attention{% endif %}">
+            <form method="post" action="/portal/ip-cameras/{{ camera.id }}/update" class="form-stack">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label>
+                    <input type="checkbox" name="camera_ids" value="{{ camera.id }}" form="camera-bulk-form" class="camera-select-item">
+                    {{ t("field_select_camera") }}
+                </label>
+                <label>{{ t("field_camera_name") }}
+                    <input type="text" name="name" value="{{ camera.name }}" required>
+                </label>
+                <label>{{ t("field_camera_protocol") }}
+                    <select name="protocol">
+                        {% for protocol in camera_protocols %}
+                        <option value="{{ protocol }}" {% if camera.protocol.value == protocol %}selected{% endif %}>{{ protocol }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>{{ t("field_camera_stream_url") }}
+                    <input type="text" name="stream_url" value="{{ camera.stream_url }}" required>
+                </label>
+                <label>
+                    <input type="checkbox" name="is_enabled" {% if camera.is_enabled %}checked{% endif %}> {{ t("field_camera_enabled") }}
+                </label>
+                <div class="tag-row">
+                    <span class="tag">{{ t("label_camera_approval_status") }}: {{ t("camera_approval_" ~ camera.approval_status.value) }}</span>
+                    <span class="tag">{{ t("table_status") }}: {{ camera.status.value }}</span>
+                    <span class="tag">{{ camera.protocol.value }}</span>
+                    <span class="tag">{{ t("label_camera_consecutive_failures") }}: {{ camera.consecutive_failures }}</span>
+                </div>
+                <div class="photo-meta">
+                    <div><strong>{{ t("field_last_check_at") }}:</strong> {{ camera.last_check_at|local_dt(timezone_name) if camera.last_check_at else t("meta_none") }}</div>
+                    <div><strong>{{ t("field_error_log") }}:</strong> {{ camera.error_log or t("meta_none") }}</div>
+                    <div><strong>{{ t("field_notes") }}:</strong> {{ camera.review_notes or t("ip_cameras_no_review_notes") }}</div>
+                </div>
+                <div class="muted small">
+                    {% if camera.approval_status.value == "pending" %}
+                    {{ t("ip_cameras_pending_review_copy") }}
+                    {% elif camera.approval_status.value == "rejected" %}
+                    {{ t("ip_cameras_rejected_review_copy") }}
+                    {% else %}
+                    {{ t("ip_cameras_approved_review_copy") }}
+                    {% endif %}
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_update") }}</button>
+                    <button type="submit" class="btn btn-secondary" formaction="/portal/ip-cameras/{{ camera.id }}/test" formmethod="post">{{ t("btn_test_connection") }}</button>
+                </div>
+            </form>
+            <form method="post" action="/portal/ip-cameras/{{ camera.id }}/delete" class="form-stack">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-danger full-width">{{ t("btn_delete_camera") }}</button>
+            </form>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_ip_cameras") }}</article>
+        {% endfor %}
+    </div>
+</section>
+<script>
+(() => {
+    const selectAll = document.getElementById("camera-select-all");
+    const items = Array.from(document.querySelectorAll(".camera-select-item"));
+    if (!selectAll || !items.length) {
+        return;
+    }
+    selectAll.addEventListener("change", () => {
+        items.forEach((item) => {
+            item.checked = selectAll.checked;
+        });
+    });
+})();
+</script>
+{% endblock %}

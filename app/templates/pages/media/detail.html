@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.media-detail-layout {
+    display: grid;
+    gap: 1rem;
+}
+.media-player-card,
+.media-preview-card,
+.media-ai-card,
+.media-annotation-card {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    padding: 1rem;
+    background: #fff;
+}
+.media-player {
+    width: 100%;
+    border-radius: 16px;
+    background: #0f172a;
+}
+.media-timeline {
+    position: relative;
+    height: 14px;
+    border-radius: 999px;
+    background: #e7eef8;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+.media-timeline-marker {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: none;
+    background: #173a63;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+.media-timeline-marker-defect {
+    background: #bf5a12;
+}
+.media-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+.media-preview-grid img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid #d7dfeb;
+}
+.media-annotation-tree {
+    display: grid;
+    gap: 0.75rem;
+}
+.media-annotation-item {
+    border: 1px solid #d7dfeb;
+    border-radius: 14px;
+    padding: 0.75rem;
+    background: #f8fbff;
+}
+.media-annotation-children {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding-left: 1rem;
+    border-left: 2px solid #d7dfeb;
+}
+.media-annotation-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+</style>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>{{ t("media_preview_title") }}</h2>
+            <div class="muted">{{ media_asset.original_file_name }}</div>
+        </div>
+        <div class="tag-row">
+            <span class="tag">{{ media_asset.status }}</span>
+            <span class="tag">{{ media_asset.source }}</span>
+            <span class="tag">{{ media_asset.storage_tier }}</span>
+        </div>
+    </div>
+</section>
+
+<section class="media-detail-layout">
+    <article class="media-player-card">
+        {% if media_asset.stream_url %}
+        <video
+            id="media-player"
+            class="media-player"
+            controls
+            preload="metadata"
+            poster="{{ media_asset.thumbnail_url or '' }}"
+        >
+            <source src="{{ media_asset.stream_url }}" type="video/mp4">
+        </video>
+        {% else %}
+        <article class="panel empty">{{ t("media_preview_unavailable") }}</article>
+        {% endif %}
+
+        {% if media_asset.timeline_markers %}
+        <div class="media-timeline" id="media-timeline">
+            {% for marker in media_asset.timeline_markers %}
+            <button
+                type="button"
+                class="media-timeline-marker {% if marker.has_defect %}media-timeline-marker-defect{% endif %}"
+                style="left: {{ marker.position_percent }}%;"
+                data-marker-seconds="{{ marker.time_seconds }}"
+                title="{{ marker.time_label }} - {{ marker.label }}"
+            ></button>
+            {% endfor %}
+        </div>
+        <div class="muted small" style="margin-top:0.5rem;">{{ t("media_timeline_help") }}</div>
+        {% endif %}
+    </article>
+
+    <article class="media-preview-card">
+        <div class="panel-header">
+            <h3>{{ t("media_keyframes_title") }}</h3>
+        </div>
+        <div class="media-preview-grid">
+            {% for item in media_asset.preview_items %}
+            <a href="{{ item.url }}" target="_blank" rel="noreferrer">
+                <img src="{{ item.url }}" alt="{{ item.name }}">
+            </a>
+            {% else %}
+            <article class="panel empty">{{ t("media_keyframes_empty") }}</article>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="media-ai-card">
+        <div class="panel-header">
+            <h3>{{ t("media_ai_summary_title") }}</h3>
+        </div>
+        <div class="photo-meta">
+            <div><strong>{{ t("field_status") }}:</strong> {{ media_asset.status }}</div>
+            <div><strong>{{ t("field_duration") }}:</strong> {{ media_asset.duration_label }}</div>
+            {% if media_asset.camera %}
+            <div><strong>{{ t("field_camera_name") }}:</strong> {{ media_asset.camera.name }} ({{ media_asset.camera.status }})</div>
+            {% endif %}
+        </div>
+        <div style="margin-top:0.75rem;">
+            <strong>{{ t("photos_ai_summary") }}:</strong>
+            <div>{{ media_asset.ai_snapshot.ai_summary or t("meta_none") }}</div>
+        </div>
+        <div class="tag-row" style="margin-top:0.75rem;">
+            {% for defect in media_asset.ai_snapshot.defects or [] %}
+            <span class="tag">{{ defect }}</span>
+            {% else %}
+            <span class="tag">{{ t("media_no_defects_tag") }}</span>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="media-annotation-card">
+        <div class="panel-header">
+            <div>
+                <h3>{{ t("media_annotations_title") }}</h3>
+                <div class="muted">{{ t("media_annotations_copy") }}</div>
+            </div>
+        </div>
+        <form id="media-annotation-form" class="form-grid">
+            <label>{{ t("field_secondary_description") }}
+                <textarea
+                    id="media-annotation-text"
+                    rows="4"
+                    maxlength="8000"
+                    placeholder="{{ t('field_secondary_description_placeholder') }}"
+                    required
+                ></textarea>
+            </label>
+            <label>{{ t("field_annotation_visibility") }}
+                <select id="media-annotation-visibility">
+                    <option value="public">{{ t("status_public") }}</option>
+                    <option value="manager_only">{{ t("status_manager_only") }}</option>
+                </select>
+            </label>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ t("btn_add_secondary_description") }}</button>
+            </div>
+        </form>
+        <div class="muted small" id="media-annotation-feedback"></div>
+        <div class="media-annotation-tree" id="media-annotation-tree" style="margin-top: 1rem;"></div>
+    </article>
+</section>
+
+<script>
+(() => {
+    const player = document.getElementById("media-player");
+    const timeline = document.getElementById("media-timeline");
+    const annotationTree = document.getElementById("media-annotation-tree");
+    const annotationForm = document.getElementById("media-annotation-form");
+    const annotationText = document.getElementById("media-annotation-text");
+    const annotationVisibility = document.getElementById("media-annotation-visibility");
+    const annotationFeedback = document.getElementById("media-annotation-feedback");
+    const assetId = "{{ media_asset.asset_id }}";
+    if (!player || !timeline) {
+        // Keep annotation UI usable even when the video file is unavailable.
+    }
+    if (timeline && player) {
+        timeline.addEventListener("click", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) {
+                return;
+            }
+            const markerSeconds = Number(target.dataset.markerSeconds || "0");
+            if (!Number.isFinite(markerSeconds)) {
+                return;
+            }
+            player.currentTime = markerSeconds;
+            if (player.paused) {
+                void player.play().catch(() => {});
+            }
+        });
+    }
+
+    if (!annotationTree || !annotationForm || !annotationText || !annotationVisibility || !annotationFeedback) {
+        return;
+    }
+
+    const labels = {
+        empty: "{{ t('empty_no_media_annotations') }}",
+        loading: "{{ t('msg_loading_annotations') }}",
+        saved: "{{ t('msg_secondary_description_saved') }}",
+        failed: "{{ t('msg_secondary_description_failed') }}",
+        chinese: "中文",
+        english: "English",
+        spanish: "Español",
+    };
+
+    const escapeHtml = (value) => String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const renderNodes = (items) => {
+        if (!Array.isArray(items) || !items.length) {
+            return `<article class="panel empty">${labels.empty}</article>`;
+        }
+        return items.map((item) => `
+            ${(() => {
+                const translations = item.translations && typeof item.translations === "object" ? item.translations : {};
+                const translationRows = [
+                    translations.zh ? `<div><strong>${escapeHtml(labels.chinese)}:</strong> ${escapeHtml(translations.zh)}</div>` : "",
+                    translations.en ? `<div><strong>${escapeHtml(labels.english)}:</strong> ${escapeHtml(translations.en)}</div>` : "",
+                    translations.es ? `<div><strong>${escapeHtml(labels.spanish)}:</strong> ${escapeHtml(translations.es)}</div>` : "",
+                ].filter(Boolean).join("");
+                const translationBlock = translationRows
+                    ? `<div class="media-annotation-content" style="margin-top:0.5rem;">${translationRows}</div>`
+                    : "";
+                return `
+            <article class="media-annotation-item">
+                <div class="tag-row">
+                    <span class="tag">${escapeHtml(item.annotation_type)}</span>
+                    <span class="tag">${escapeHtml(item.role_at_time)}</span>
+                    <span class="tag">${escapeHtml(item.visibility)}</span>
+                    <span class="tag">${escapeHtml(item.status)}</span>
+                </div>
+                <div class="muted small" style="margin-top:0.5rem;">${escapeHtml(item.author_name || "")}</div>
+                <div class="media-annotation-content" style="margin-top:0.5rem;">${escapeHtml(item.content_text || "")}</div>
+                ${translationBlock}
+                ${item.children && item.children.length ? `<div class="media-annotation-children">${renderNodes(item.children)}</div>` : ""}
+            </article>
+                `;
+            })()}
+        `).join("");
+    };
+
+    const loadAnnotations = async () => {
+        annotationTree.innerHTML = `<article class="panel empty">${labels.loading}</article>`;
+        const response = await fetch(`/api/v2/annotations/${assetId}?target_type=media_asset`, {
+            headers: { "Accept": "application/json" },
+            credentials: "same-origin",
+            cache: "no-store",
+        });
+        if (!response.ok) {
+            annotationTree.innerHTML = `<article class="panel empty">${labels.failed}</article>`;
+            return;
+        }
+        const payload = await response.json();
+        annotationTree.innerHTML = renderNodes(payload.items || []);
+    };
+
+    annotationForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        annotationFeedback.textContent = "";
+        const response = await fetch("/api/v2/annotations/text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+                target_ids: [{ media_asset_id: assetId }],
+                content_text: annotationText.value.trim(),
+                visibility: annotationVisibility.value,
+            }),
+        });
+        if (!response.ok) {
+            annotationFeedback.textContent = labels.failed;
+            return;
+        }
+        annotationText.value = "";
+        annotationFeedback.textContent = labels.saved;
+        await loadAnnotations();
+    });
+
+    void loadAnnotations();
+})();
+</script>
+{% endblock %}

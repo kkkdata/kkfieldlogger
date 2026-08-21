@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% block content %}
+{% set structured = progress_report.structured_report or {} %}
+<style>
+.progress-report-hero {
+    display: grid;
+    gap: 1rem;
+}
+.progress-report-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.85rem;
+}
+.progress-metric {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    padding: 1rem;
+    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+.progress-metric-label {
+    color: #5c6f87;
+    font-size: 0.84rem;
+    margin-bottom: 0.35rem;
+}
+.progress-metric-value {
+    color: #173a63;
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+.progress-report-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+.progress-report-list {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    padding-left: 1.1rem;
+}
+.progress-report-list li {
+    color: #172033;
+    line-height: 1.6;
+}
+.progress-report-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.progress-report-photo-card,
+.progress-timeline-card {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+}
+.progress-report-photo-card img,
+.progress-timeline-card img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    background: #f5f7fb;
+}
+.progress-report-photo-body,
+.progress-timeline-body {
+    padding: 0.95rem 1rem 1rem;
+    display: grid;
+    gap: 0.55rem;
+}
+.progress-timeline-grid {
+    display: grid;
+    gap: 1rem;
+}
+.progress-timeline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.progress-timeline-note {
+    color: #172033;
+    line-height: 1.65;
+    white-space: pre-wrap;
+}
+.progress-report-raw {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: #172033;
+}
+.tag-soft {
+    border: 1px solid #cfe0f2;
+    background: #eef4fb;
+    color: #22466e;
+    border-radius: 999px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.84rem;
+}
+</style>
+
+<section class="panel progress-report-hero">
+    <div class="panel-header">
+        <div>
+            <h2>{{ progress_report.title }}</h2>
+            <div class="muted small">
+                {{ t("table_status") }}: {{ progress_report.status }} ·
+                {{ t("ai_reports_source_count") }}: {{ progress_report.photo_count }}
+            </div>
+        </div>
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="/portal/reports">{{ t("btn_open_report_history") }}</a>
+        </div>
+    </div>
+    {% if progress_report.error_message %}
+    <div class="muted">{{ progress_report.error_message }}</div>
+    {% endif %}
+    <div class="progress-report-summary-grid">
+        <article class="progress-metric">
+            <div class="progress-metric-label">{{ t("progress_report_overall_progress") }}</div>
+            <div class="progress-metric-value">
+                {% if structured.overall_progress_percent is not none %}
+                    {{ structured.overall_progress_percent }}%
+                {% else %}
+                    --
+                {% endif %}
+            </div>
+        </article>
+        <article class="progress-metric">
+            <div class="progress-metric-label">{{ t("progress_report_overall_status") }}</div>
+            <div class="progress-metric-value">{{ t("progress_status_" ~ (structured.overall_status or "unknown")) }}</div>
+        </article>
+        <article class="progress-metric">
+            <div class="progress-metric-label">{{ t("progress_report_confidence") }}</div>
+            <div class="progress-metric-value">{{ t("progress_confidence_" ~ (structured.confidence_level or "medium")) }}</div>
+        </article>
+    </div>
+</section>
+
+{% if progress_report.project_prompt or progress_report.custom_prompt %}
+<section class="progress-report-columns">
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("field_image_video_ai_prompt") }}</h3>
+        </div>
+        <div class="progress-timeline-note">{{ progress_report.project_prompt or t("empty_project_prompt") }}</div>
+    </article>
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_custom_prompt") }}</h3>
+        </div>
+        <div class="progress-timeline-note">{{ progress_report.custom_prompt or t("progress_report_prompt_default_hint") }}</div>
+    </article>
+</section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("progress_report_manager_brief") }}</h3>
+    </div>
+    <div class="progress-timeline-note">{{ structured.manager_brief or structured.executive_summary or t("status_pending") }}</div>
+</section>
+
+<section class="progress-report-columns">
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_executive_summary") }}</h3>
+        </div>
+        <div class="progress-timeline-note">{{ structured.executive_summary or t("status_pending") }}</div>
+    </article>
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_angle_notes") }}</h3>
+        </div>
+        {% if structured.angle_bias_notes %}
+        <ul class="progress-report-list">
+            {% for item in structured.angle_bias_notes %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("empty_project_prompt") }}</div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="progress-report-columns">
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_key_changes") }}</h3>
+        </div>
+        {% if structured.key_changes %}
+        <ul class="progress-report-list">
+            {% for item in structured.key_changes %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("status_pending") }}</div>
+        {% endif %}
+    </article>
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_work_completed") }}</h3>
+        </div>
+        {% if structured.work_completed %}
+        <ul class="progress-report-list">
+            {% for item in structured.work_completed %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("status_pending") }}</div>
+        {% endif %}
+    </article>
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_work_remaining") }}</h3>
+        </div>
+        {% if structured.work_remaining %}
+        <ul class="progress-report-list">
+            {% for item in structured.work_remaining %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("status_pending") }}</div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="progress-report-columns">
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_safety_risks") }}</h3>
+        </div>
+        {% if structured.safety_risks %}
+        <ul class="progress-report-list">
+            {% for item in structured.safety_risks %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("empty_no_camera_attention") }}</div>
+        {% endif %}
+    </article>
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_quality_risks") }}</h3>
+        </div>
+        {% if structured.quality_risks %}
+        <ul class="progress-report-list">
+            {% for item in structured.quality_risks %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("empty_no_camera_attention") }}</div>
+        {% endif %}
+    </article>
+    <article class="panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_recommended_actions") }}</h3>
+        </div>
+        {% if structured.recommended_actions %}
+        <ul class="progress-report-list">
+            {% for item in structured.recommended_actions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted">{{ t("status_pending") }}</div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("progress_report_timeline") }}</h3>
+    </div>
+    <div class="progress-timeline-grid">
+        {% for item in structured.timeline_observations %}
+        <article class="progress-timeline-card">
+            {% if item.photo and (item.photo.thumb_url or item.photo.image_url) %}
+            <img src="{{ item.photo.thumb_url or item.photo.image_url }}" alt="{{ item.photo.original_file_name or item.photo.id }}">
+            {% endif %}
+            <div class="progress-timeline-body">
+                <div class="progress-timeline-meta">
+                    <span class="tag-soft">#{{ item.photo_id or "?" }}</span>
+                    <span class="tag-soft">{{ item.captured_at or t("status_pending") }}</span>
+                    {% if item.photo and item.photo.media_kind %}
+                    <span class="tag-soft">{{ item.photo.media_kind }}</span>
+                    {% endif %}
+                </div>
+                <div class="progress-timeline-note">{{ item.observation or t("status_pending") }}</div>
+                {% if item.progress_signal %}
+                <div class="muted small"><strong>{{ t("progress_report_progress_signal") }}:</strong> {{ item.progress_signal }}</div>
+                {% endif %}
+                {% if item.risk_signal %}
+                <div class="muted small"><strong>{{ t("progress_report_risk_signal") }}:</strong> {{ item.risk_signal }}</div>
+                {% endif %}
+            </div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_project_photos") }}</article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("reports_source_photos") }}</h3>
+    </div>
+    <div class="progress-report-photos">
+        {% for photo in progress_report.photos %}
+        <article class="progress-report-photo-card">
+            <img src="{{ photo.thumb_url or photo.image_url }}" alt="{{ photo.original_file_name }}">
+            <div class="progress-report-photo-body">
+                <div><strong>#{{ photo.id }}</strong> · {{ photo.original_file_name }}</div>
+                <div class="muted small">{{ photo.captured_at_utc }}</div>
+            </div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_project_photos") }}</article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("progress_report_raw_text") }}</h3>
+    </div>
+    <div class="progress-report-raw">{{ progress_report.report_content or t("status_pending") }}</div>
+</section>
+<script>
+(() => {
+    const detailUrl = {{ progress_report.detail_url|tojson }};
+    const currentStatus = {{ progress_report.status|tojson }};
+    if (!detailUrl || !["pending", "processing"].includes(String(currentStatus || "").toLowerCase())) {
+        return;
+    }
+
+    const poll = async () => {
+        try {
+            const response = await fetch(detailUrl, {
+                headers: { "Accept": "application/json" },
+                credentials: "same-origin",
+                cache: "no-store",
+            });
+            if (!response.ok) {
+                return;
+            }
+            const payload = await response.json();
+            const nextStatus = String(payload.status || "").toLowerCase();
+            if (["completed", "failed"].includes(nextStatus)) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.warn("progress_report_detail_poll_failed", error);
+        }
+    };
+
+    window.setInterval(poll, 5000);
+    poll();
+})();
+</script>
+{% endblock %}

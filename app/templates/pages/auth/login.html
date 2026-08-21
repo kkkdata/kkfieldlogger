@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ system_settings["portal_title"] }} {{ t("page_login") }}</title>
+    <link rel="icon" type="image/png" href="{{ system_settings['logo_path'] }}">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="login-body">
+    <main class="login-shell">
+        <section class="login-card">
+            <div class="brand login-brand">
+                <img src="{{ system_settings['logo_path'] }}" alt="K&K Data Service Inc. logo" class="brand-logo">
+                <div>
+                    <div class="brand-title">{{ system_settings["portal_title"] }}</div>
+                    <div class="brand-subtitle">{{ system_settings["company_name"] }}</div>
+                    <div class="brand-tagline">{{ t("portal_brand_statement") }}</div>
+                </div>
+            </div>
+            <div class="login-copy">
+                <h1>{{ t("login_management_access") }}</h1>
+                <p class="muted">{{ t("login_description") }}</p>
+            </div>
+            <div class="login-help-links">
+                {% for item in portal_help_links %}
+                <a href="{{ item.href }}" class="login-help-link" target="_blank" rel="noreferrer">{{ item.label }}</a>
+                {% endfor %}
+            </div>
+            <form method="post" action="/portal/language" class="form-stack">
+                <input type="hidden" name="next_url" value="/portal/login">
+                <label>
+                    {{ t("label_language") }}
+                    <select name="language" onchange="this.form.submit()">
+                        {% for code, label in language_options.items() %}
+                        <option value="{{ code }}" {% if current_language == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </form>
+            {% if flashes %}
+            <section class="flash-stack">
+                {% for item in flashes %}
+                <div class="flash flash-{{ item.level }}">{{ item.message }}</div>
+                {% endfor %}
+            </section>
+            {% endif %}
+            <form method="post" action="/portal/login" class="form-stack">
+                <label>
+                    {{ t("label_username") }}
+                    <input type="text" name="username" autocomplete="username" required>
+                </label>
+                <label>
+                    {{ t("label_password") }}
+                    <input type="password" name="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit" class="btn btn-primary">{{ t("btn_sign_in") }}</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

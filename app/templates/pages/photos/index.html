@@ -1,0 +1,1761 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel photos-filter-panel">
+    <div class="panel-header">
+        <h2>{{ t("photos_review") }}</h2>
+        {% if can_manage %}
+        <div class="form-actions photo-recycle-toolbar">
+            <span class="muted small">
+                {% if filters.recycle_bin %}
+                {{ t("msg_recycle_bin_hint", count=deleted_photo_count) }}
+                {% else %}
+                {{ t("msg_recycle_bin_count", count=deleted_photo_count) }}
+                {% endif %}
+            </span>
+            {% if filters.recycle_bin %}
+            <a class="btn btn-secondary btn-small" href="/portal/photos">{{ t("btn_back_to_active_photos") }}</a>
+            <form method="post" action="/portal/photos/recycle-bin/empty" onsubmit="return confirm('{{ t('msg_confirm_empty_recycle_bin') }}');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="next_url" value="/portal/photos?recycle_bin=true">
+                <button type="submit" class="btn btn-danger btn-small">{{ t("btn_empty_recycle_bin") }}</button>
+            </form>
+            {% else %}
+            <a class="btn btn-secondary btn-small" href="/portal/photos?recycle_bin=true">{{ t("btn_open_recycle_bin") }}</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <form method="get" class="form-grid photos-filter-form">
+        <input type="hidden" name="page" value="1">
+        {% if filters.recycle_bin %}
+        <input type="hidden" name="recycle_bin" value="true">
+        {% endif %}
+        <label>{{ t("field_semantic_query") }}
+            <input
+                type="text"
+                name="semantic_query"
+                value="{{ filters.semantic_query }}"
+                placeholder="{{ t('photos_semantic_search_hint') }}"
+            >
+        </label>
+        <label>{{ t("field_ai_keyword") }}
+            <input
+                type="text"
+                name="ai_keyword"
+                value="{{ filters.ai_keyword }}"
+                placeholder="{{ t('photos_ai_keyword_hint') }}"
+            >
+        </label>
+        <label>{{ t("field_project") }}
+            <select name="project_id">
+                <option value="">{{ t("field_all_projects") }}</option>
+                {% for project in projects %}
+                <option value="{{ project.project_id }}" {% if filters.project_id == project.project_id %}selected{% endif %}>{{ project.project_id }} - {{ project.project_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>{{ t("field_employee") }}
+            <select name="employee_id">
+                <option value="">{{ t("field_all_employees") }}</option>
+                {% for employee in employees %}
+                <option value="{{ employee.employee_id }}" {% if filters.employee_id == employee.employee_id %}selected{% endif %}>{{ employee.employee_id }} - {{ employee.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>{{ t("field_start_date") }}
+            <input type="date" name="start_date" value="{{ filters.start_date }}">
+        </label>
+        <label>{{ t("field_end_date") }}
+            <input type="date" name="end_date" value="{{ filters.end_date }}">
+        </label>
+        <label>{{ t("field_visibility") }}
+            <select name="visibility">
+                <option value="">{{ t("field_all") }}</option>
+                <option value="internal" {% if filters.visibility == "internal" %}selected{% endif %}>{{ t("status_internal") }}</option>
+                <option value="client_visible" {% if filters.visibility == "client_visible" %}selected{% endif %}>{{ t("status_client_visible") }}</option>
+            </select>
+        </label>
+        <label>{{ t("field_approval") }}
+            <select name="approval_status">
+                <option value="">{{ t("field_all") }}</option>
+                <option value="pending" {% if filters.approval_status == "pending" %}selected{% endif %}>{{ t("status_pending") }}</option>
+                <option value="approved" {% if filters.approval_status == "approved" %}selected{% endif %}>{{ t("status_approved") }}</option>
+                <option value="rejected" {% if filters.approval_status == "rejected" %}selected{% endif %}>{{ t("status_rejected") }}</option>
+            </select>
+        </label>
+        <label>{{ t("field_confidence") }}
+            <select name="confidence">
+                <option value="">{{ t("field_all_confidence") }}</option>
+                <option value="low" {% if filters.confidence == "low" %}selected{% endif %}>{{ t("label_ai_confidence_low") }}</option>
+                <option value="medium" {% if filters.confidence == "medium" %}selected{% endif %}>{{ t("label_ai_confidence_medium") }}</option>
+                <option value="high" {% if filters.confidence == "high" %}selected{% endif %}>{{ t("label_ai_confidence_high") }}</option>
+            </select>
+        </label>
+        <label>{{ t("field_view") }}
+            <select name="view">
+                <option value="grid" {% if filters.view == "grid" %}selected{% endif %}>{{ t("field_grid") }}</option>
+                <option value="list" {% if filters.view == "list" %}selected{% endif %}>{{ t("field_list") }}</option>
+            </select>
+        </label>
+        <label>{{ t("field_items_per_page") }}
+            <select name="per_page">
+                {% for option in [25, 50, 100] %}
+                <option value="{{ option }}" {% if filters.per_page == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="small">
+            <input type="checkbox" name="include_rejected_ai" value="true" {% if filters.include_rejected_ai %}checked{% endif %}>
+            {{ t("field_include_rejected_ai") }}
+        </label>
+        <div class="form-actions photos-filter-actions">
+            <button class="btn btn-primary" type="submit">{{ t("btn_apply_filters") }}</button>
+            <a class="btn btn-secondary" href="/portal/photos">{{ t("btn_reset") }}</a>
+        </div>
+    </form>
+</section>
+
+<div class="photos-utility-grid">
+{% if can_generate_reports and selected_report %}
+<section class="panel photos-utility-panel">
+    <div class="panel-header">
+        <h3>{{ t("reports_status_title") }}</h3>
+    </div>
+    <div
+        class="photo-meta status-meta-card"
+        id="generated-report-card"
+        data-status-url="{{ selected_report.status_url }}"
+        data-initial-status="{{ selected_report.status }}"
+        data-download-label="{{ t('btn_download_report') }}"
+        data-status-label="{{ t('table_status') }}"
+        data-error-label="{{ t('field_error_message') }}"
+    >
+        <div><strong>{{ selected_report.title }}</strong></div>
+        <div>
+            <strong>{{ t("table_status") }}:</strong>
+            <span id="generated-report-status">{{ selected_report.status }}</span>
+        </div>
+        <div id="generated-report-error"{% if not selected_report.error_message %} hidden{% endif %}>
+            <strong>{{ t("field_error_message") }}:</strong>
+            <span id="generated-report-error-text">{{ selected_report.error_message or "" }}</span>
+        </div>
+        <div class="muted small" id="generated-report-pending-copy"{% if selected_report.download_url or selected_report.status == "failed" %} hidden{% endif %}>
+            The page checks the report status automatically while it is being generated.
+        </div>
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="/portal/ai-center">{{ t("btn_open_ai_center") }}</a>
+            <a class="btn btn-secondary" href="/portal/reports">{{ t("btn_open_report_history") }}</a>
+        </div>
+        <div class="form-actions" id="generated-report-download"{% if not selected_report.download_url %} hidden{% endif %}>
+            <a class="btn btn-primary" id="generated-report-download-link" href="{{ selected_report.portal_download_url or '#' }}">{{ t("btn_download_report") }}</a>
+        </div>
+        <form
+            method="post"
+            action="/portal/reports/{{ selected_report.report_id }}/retry"
+            class="form-actions"
+            id="generated-report-retry"
+            {% if selected_report.status != "failed" %}hidden{% endif %}
+        >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+            <button type="submit" class="btn btn-secondary">{{ t("btn_retry_report") }}</button>
+        </form>
+    </div>
+</section>
+<script>
+(() => {
+    const reportCard = document.getElementById("generated-report-card");
+    if (!reportCard) {
+        return;
+    }
+
+    const statusUrl = reportCard.dataset.statusUrl;
+    const initialStatus = reportCard.dataset.initialStatus || "";
+    const statusText = document.getElementById("generated-report-status");
+    const errorBlock = document.getElementById("generated-report-error");
+    const errorText = document.getElementById("generated-report-error-text");
+    const pendingCopy = document.getElementById("generated-report-pending-copy");
+    const downloadBlock = document.getElementById("generated-report-download");
+    const downloadLink = document.getElementById("generated-report-download-link");
+    const retryForm = document.getElementById("generated-report-retry");
+
+    if (!statusUrl || initialStatus === "completed" || initialStatus === "failed") {
+        return;
+    }
+
+    const applyReportState = (report) => {
+        statusText.textContent = report.status || "unknown";
+
+        if (report.error_message) {
+            errorText.textContent = report.error_message;
+            errorBlock.hidden = false;
+        } else {
+            errorText.textContent = "";
+            errorBlock.hidden = true;
+        }
+
+        if (report.portal_download_url) {
+            downloadLink.href = report.portal_download_url;
+            downloadBlock.hidden = false;
+            pendingCopy.hidden = true;
+            retryForm.hidden = true;
+        } else {
+            downloadBlock.hidden = true;
+            pendingCopy.hidden = report.status === "failed";
+            retryForm.hidden = report.status !== "failed";
+        }
+    };
+
+    const pollStatus = async () => {
+        try {
+            const response = await fetch(statusUrl, {
+                headers: { "Accept": "application/json" },
+                credentials: "same-origin",
+                cache: "no-store",
+            });
+            if (!response.ok) {
+                return;
+            }
+            const report = await response.json();
+            applyReportState(report);
+            if (report.status === "completed" || report.status === "failed") {
+                window.clearInterval(intervalId);
+            }
+        } catch (error) {
+            console.warn("report_status_poll_failed", error);
+        }
+    };
+
+    const intervalId = window.setInterval(pollStatus, 5000);
+    pollStatus();
+})();
+</script>
+{% endif %}
+
+{% if can_generate_reports and selected_progress_report %}
+<section class="panel photos-utility-panel">
+    <div class="panel-header">
+        <h3>{{ t("progress_report_status_title") }}</h3>
+    </div>
+    <div
+        class="photo-meta status-meta-card"
+        id="progress-report-card"
+        data-status-url="{{ selected_progress_report.detail_url }}"
+        data-initial-status="{{ selected_progress_report.status }}"
+        data-detail-url="{{ selected_progress_report.portal_url }}"
+    >
+        <div><strong>{{ selected_progress_report.title }}</strong></div>
+        <div>
+            <strong>{{ t("table_status") }}:</strong>
+            <span id="progress-report-status">{{ selected_progress_report.status }}</span>
+        </div>
+        <div class="muted small">{{ t("ai_reports_source_count") }}: {{ selected_progress_report.photo_count }}</div>
+        <div id="progress-report-error"{% if not selected_progress_report.error_message %} hidden{% endif %}>
+            <strong>{{ t("field_error_message") }}:</strong>
+            <span id="progress-report-error-text">{{ selected_progress_report.error_message or "" }}</span>
+        </div>
+        <div class="muted small" id="progress-report-pending-copy"{% if selected_progress_report.status in ["completed", "failed"] %} hidden{% endif %}>
+            {{ t("msg_progress_report_followup") }}
+        </div>
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="/portal/ai-center">{{ t("btn_open_ai_center") }}</a>
+            <a class="btn btn-secondary" href="/portal/reports">{{ t("btn_open_report_history") }}</a>
+        </div>
+        <div class="form-actions" id="progress-report-open"{% if selected_progress_report.status != "completed" %} hidden{% endif %}>
+            <a class="btn btn-primary" id="progress-report-open-link" href="{{ selected_progress_report.portal_url }}">{{ t("btn_open_progress_report") }}</a>
+        </div>
+    </div>
+</section>
+<script>
+(() => {
+    const reportCard = document.getElementById("progress-report-card");
+    if (!reportCard) {
+        return;
+    }
+
+    const statusUrl = reportCard.dataset.statusUrl;
+    const initialStatus = reportCard.dataset.initialStatus || "";
+    const detailUrl = reportCard.dataset.detailUrl || "#";
+    const statusText = document.getElementById("progress-report-status");
+    const errorBlock = document.getElementById("progress-report-error");
+    const errorText = document.getElementById("progress-report-error-text");
+    const pendingCopy = document.getElementById("progress-report-pending-copy");
+    const openBlock = document.getElementById("progress-report-open");
+    const openLink = document.getElementById("progress-report-open-link");
+
+    if (!statusUrl || initialStatus === "completed" || initialStatus === "failed") {
+        return;
+    }
+
+    const applyState = (report) => {
+        statusText.textContent = report.status || "unknown";
+        if (report.error_message) {
+            errorText.textContent = report.error_message;
+            errorBlock.hidden = false;
+        } else {
+            errorText.textContent = "";
+            errorBlock.hidden = true;
+        }
+        const reportReady = report.status === "completed";
+        openLink.href = report.portal_url || detailUrl;
+        openBlock.hidden = !reportReady;
+        pendingCopy.hidden = reportReady || report.status === "failed";
+    };
+
+    const pollStatus = async () => {
+        try {
+            const response = await fetch(statusUrl, {
+                headers: { "Accept": "application/json" },
+                credentials: "same-origin",
+                cache: "no-store",
+            });
+            if (!response.ok) {
+                return;
+            }
+            const report = await response.json();
+            applyState(report);
+            if (report.status === "completed" || report.status === "failed") {
+                window.clearInterval(intervalId);
+            }
+        } catch (error) {
+            console.warn("progress_report_status_poll_failed", error);
+        }
+    };
+
+    const intervalId = window.setInterval(pollStatus, 5000);
+    pollStatus();
+})();
+</script>
+{% endif %}
+
+{% if can_manage or can_reprocess or can_comment or can_generate_reports %}
+<details class="panel photos-utility-panel photos-bulk-panel photos-bulk-details">
+    <summary class="photos-bulk-summary-row">
+        <span>{{ t("photos_bulk_actions_title") }}</span>
+        <span class="muted small">{{ t("photos_bulk_actions_copy") }}</span>
+    </summary>
+    <form
+        method="post"
+        action="/portal/photos/reprocess"
+        class="form-grid"
+        id="bulk-photo-tools-form"
+        data-confirm-publish="{{ t('msg_confirm_bulk_publish_to_client', count='__COUNT__') }}"
+        data-confirm-review="{{ t('msg_confirm_bulk_review_update', count='__COUNT__') }}"
+        data-confirm-annotate="{{ t('msg_confirm_bulk_annotate_update', count='__COUNT__') }}"
+        data-confirm-delete="{{ t('msg_confirm_bulk_recycle_bin', count='__COUNT__') }}"
+        data-confirm-reprocess="{{ t('msg_confirm_bulk_reprocess_ai', count='__COUNT__') }}"
+        data-confirm-report="{{ t('msg_confirm_bulk_generate_report', count='__COUNT__') }}"
+    >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+        <div class="photo-bulk-header">
+            <div class="photo-bulk-summary">
+                <div class="muted small">{{ t("photos_review_status_copy") }}</div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="select-visible-photos">{{ t("btn_select_visible_photos") }}</button>
+                <button type="button" class="btn btn-secondary" id="clear-photo-selection">{{ t("btn_clear_photo_selection") }}</button>
+            </div>
+        </div>
+        <div class="photo-bulk-grid">
+            {% if can_manage %}
+            <section class="photo-bulk-card">
+                <div class="photo-bulk-card-title">{{ t("photos_bulk_review_title") }}</div>
+                <div class="muted small">{{ t("photos_bulk_review_copy") }}</div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" data-bulk-client-publish>{{ t("btn_bulk_publish_to_client") }}</button>
+                    <button type="button" class="btn btn-secondary" data-bulk-review-open>{{ t("btn_bulk_review") }}</button>
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                        formaction="/portal/photos/bulk/delete"
+                        formnovalidate
+                        data-bulk-delete-submit
+                    >
+                        {{ t("btn_bulk_move_to_recycle_bin") }}
+                    </button>
+                </div>
+            </section>
+            {% endif %}
+            {% if can_manage or can_comment %}
+            <section class="photo-bulk-card">
+                <div class="photo-bulk-card-title">{{ t("photos_bulk_annotations_title") }}</div>
+                <div class="muted small">{{ t("photos_bulk_annotations_copy") }}</div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-bulk-annotate-open>{{ t("btn_bulk_notes_comments") }}</button>
+                </div>
+            </section>
+            {% endif %}
+            {% if can_reprocess %}
+            <section class="photo-bulk-card">
+                <label>{{ t("field_custom_prompt") }}
+                    <textarea name="prompt" rows="3" placeholder="{{ t('field_comment_placeholder') }}"></textarea>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_bulk_reprocess") }}</button>
+                    {% if can_generate_reports %}
+                    <button type="submit" class="btn btn-secondary" formaction="/portal/reports/generate">{{ t("btn_generate_report") }}</button>
+                    <button type="button" class="btn btn-secondary" data-progress-compare-open>{{ t("btn_generate_progress_report") }}</button>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </form>
+</details>
+<style>
+.bulk-progress-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    z-index: 1250;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.92);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+}
+.bulk-progress-bar[hidden] {
+    display: none;
+}
+.photo-card.is-focused {
+    outline: 3px solid rgba(23, 58, 99, 0.22);
+    outline-offset: 4px;
+}
+.photo-thumb-link {
+    position: relative;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+.photo-media-badge {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.82);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+}
+.photo-detail-video-player {
+    width: 100%;
+    max-height: 66vh;
+    border-radius: 16px;
+    background: #0f172a;
+}
+</style>
+<div class="bulk-progress-bar" id="bulk-progress-bar" hidden>
+    <span id="bulk-progress-count">{{ t("msg_progress_report_selection_count", count=0) }}</span>
+    {% if can_manage %}
+    <button type="button" class="btn btn-primary" data-bulk-client-publish>{{ t("btn_bulk_publish_to_client") }}</button>
+    {% endif %}
+    {% if can_manage %}
+    <button type="button" class="btn btn-secondary" data-bulk-review-open>{{ t("btn_bulk_review") }}</button>
+    {% endif %}
+    {% if can_manage or can_comment %}
+    <button type="button" class="btn btn-secondary" data-bulk-annotate-open>{{ t("btn_bulk_notes_comments") }}</button>
+    {% endif %}
+    {% if can_manage %}
+    <button
+        type="submit"
+        class="btn btn-danger"
+        form="bulk-photo-tools-form"
+        formaction="/portal/photos/bulk/delete"
+        formnovalidate
+        data-bulk-delete-submit
+    >
+        {{ t("btn_bulk_move_to_recycle_bin") }}
+    </button>
+    {% endif %}
+    {% if can_generate_reports %}
+    <button type="button" class="btn btn-primary" data-progress-compare-open>
+        {{ t("btn_generate_progress_report") }}
+    </button>
+    {% endif %}
+</div>
+{% endif %}
+</div>
+
+<div class="photo-detail-modal" id="progress-report-prompt-modal" hidden>
+    <div class="photo-detail-modal-backdrop" data-progress-prompt-close></div>
+    <div class="photo-detail-modal-panel">
+        <div class="panel-header">
+            <h3>{{ t("progress_report_prompt_title") }}</h3>
+            <button type="button" class="btn btn-secondary" data-progress-prompt-close>{{ t("btn_close") }}</button>
+        </div>
+        <div class="photo-detail-modal-content">
+            <div class="muted small" id="progress-report-selected-count">{{ t("msg_progress_report_selection_count", count=0) }}</div>
+            <div class="muted small">{{ t("progress_report_prompt_help") }}</div>
+            <label>{{ t("progress_report_custom_prompt") }}
+                <textarea id="progress-report-prompt-textarea" rows="5" placeholder="{{ t('progress_report_prompt_default_hint') }}"></textarea>
+            </label>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-progress-prompt-close>{{ t("btn_cancel") }}</button>
+                <button type="button" class="btn btn-primary" id="progress-report-submit">{{ t("btn_generate_progress_report") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="photo-detail-modal" id="bulk-review-modal" hidden>
+    <div class="photo-detail-modal-backdrop" data-bulk-review-close></div>
+    <div class="photo-detail-modal-panel">
+        <div class="panel-header">
+            <h3>{{ t("photos_bulk_review_title") }}</h3>
+            <button type="button" class="btn btn-secondary" data-bulk-review-close>{{ t("btn_close") }}</button>
+        </div>
+        <div class="photo-detail-modal-content">
+            <div class="muted small" id="bulk-review-selected-count">{{ t("msg_progress_report_selection_count", count=0) }}</div>
+            <div class="muted small">{{ t("photos_review_status_copy") }}</div>
+            <label>{{ t("field_bulk_visibility") }}
+                <select name="bulk_visibility" form="bulk-photo-tools-form" id="bulk-review-visibility">
+                    <option value="">{{ t("field_keep_current") }}</option>
+                    <option value="internal">{{ t("status_internal") }}</option>
+                    <option value="client_visible">{{ t("status_client_visible") }}</option>
+                </select>
+            </label>
+            <label>{{ t("field_bulk_approval_status") }}
+                <select name="bulk_approval_status" form="bulk-photo-tools-form" id="bulk-review-approval-status">
+                    <option value="">{{ t("field_keep_current") }}</option>
+                    <option value="pending">{{ t("status_pending") }}</option>
+                    <option value="approved">{{ t("status_approved") }}</option>
+                    <option value="rejected">{{ t("status_rejected") }}</option>
+                </select>
+            </label>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-bulk-review-close>{{ t("btn_cancel") }}</button>
+                <button type="submit" class="btn btn-primary" form="bulk-photo-tools-form" formaction="/portal/photos/bulk/review">{{ t("btn_apply_to_selected") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="photo-detail-modal" id="bulk-annotate-modal" hidden>
+    <div class="photo-detail-modal-backdrop" data-bulk-annotate-close></div>
+    <div class="photo-detail-modal-panel">
+        <div class="panel-header">
+            <h3>{{ t("photos_bulk_annotations_title") }}</h3>
+            <button type="button" class="btn btn-secondary" data-bulk-annotate-close>{{ t("btn_close") }}</button>
+        </div>
+        <div class="photo-detail-modal-content">
+            <div class="muted small" id="bulk-annotate-selected-count">{{ t("msg_progress_report_selection_count", count=0) }}</div>
+            <div class="muted small">{{ t("photos_bulk_annotations_copy") }}</div>
+            <label>{{ t("field_bulk_note") }}
+                <textarea name="bulk_note" form="bulk-photo-tools-form" id="bulk-note-textarea" rows="4" placeholder="{{ t('field_bulk_note_placeholder') }}"></textarea>
+            </label>
+            <label>{{ t("field_bulk_comment") }}
+                <textarea name="bulk_comment" form="bulk-photo-tools-form" id="bulk-comment-textarea" rows="4" placeholder="{{ t('field_bulk_comment_placeholder') }}"></textarea>
+            </label>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-bulk-annotate-close>{{ t("btn_cancel") }}</button>
+                <button type="submit" class="btn btn-primary" form="bulk-photo-tools-form" formaction="/portal/photos/bulk/annotate">{{ t("btn_apply_to_selected") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if can_review_ai_history %}
+<style>
+.photos-utility-grid .panel {
+    min-height: 100%;
+}
+.ai-history-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    justify-content: flex-end;
+    z-index: 1300;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms ease, visibility 200ms ease;
+}
+.ai-history-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+.ai-history-drawer {
+    width: min(640px, 100%);
+    height: 100%;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 250, 255, 0.98) 100%);
+    box-shadow: -12px 0 40px rgba(15, 23, 42, 0.25);
+    padding: 1.5rem;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ai-history-overlay.is-open .ai-history-drawer {
+    transform: translateX(0);
+}
+.ai-history-list {
+    display: grid;
+    gap: 1rem;
+}
+.ai-history-entry {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    padding: 1rem;
+    background: #f8fbff;
+    box-shadow: 0 14px 28px rgba(16, 36, 61, 0.06);
+}
+.ai-history-meta {
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+.ai-history-meta strong {
+    font-weight: 700;
+}
+.ai-history-prompt,
+.ai-history-result {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.ai-history-entry-primary {
+    border-color: #2c5f98;
+    background: linear-gradient(180deg, #f4f9ff 0%, #e9f3ff 100%);
+}
+.ai-history-primary-badge {
+    background: #2c5f98;
+    color: #fff;
+}
+.photo-ai-summary-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.6rem;
+    margin-top: 0.35rem;
+}
+.photo-ai-summary-box {
+    display: grid;
+    gap: 0.45rem;
+    min-width: 0;
+    width: 100%;
+    border: 1px solid #d7dfeb;
+    border-left: 4px solid #2c5f98;
+    border-radius: 14px;
+    padding: 0.8rem 0.9rem;
+    background: linear-gradient(180deg, #f8fbff 0%, #f2f7ff 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+.photo-ai-summary-box[hidden] + .photo-quick-actions {
+    margin-top: 0.1rem;
+}
+.photo-ai-summary-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem 0.75rem;
+}
+.photo-ai-summary-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #173a63;
+}
+.photo-ai-summary-title::before {
+    content: "";
+    width: 0.55rem;
+    height: 0.55rem;
+    flex: 0 0 0.55rem;
+    border-radius: 999px;
+    background: #2c5f98;
+}
+.photo-ai-summary-badges {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.4rem;
+}
+.photo-ai-summary-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.5;
+    color: #18314f;
+    font-size: 0.9rem;
+}
+.photo-ai-summary-caption {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #5a7698;
+}
+.photo-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+.photo-quick-actions .btn {
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+}
+.ai-history-button {
+    width: 100%;
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #173a63;
+    font-weight: 650;
+}
+.ai-history-button:hover {
+    background: #eef4fb;
+    color: #173a63;
+}
+.photo-ai-summary-row .ai-history-primary-badge {
+    flex: 0 0 auto;
+}
+.ai-confidence-badge-low {
+    background: #eef4fb;
+    color: #22476d;
+}
+.ai-confidence-badge-medium {
+    background: #eef8f2;
+    color: #1d6b48;
+}
+.ai-confidence-badge-high {
+    background: #fff4df;
+    color: #9b5d00;
+}
+.photo-density-tools {
+    margin-top: 0.2rem;
+}
+.photo-density-tools summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid #d7dfeb;
+    border-radius: 14px;
+    background: #fbfdff;
+    color: #173a63;
+    font-weight: 700;
+    box-shadow: 0 12px 24px rgba(16, 36, 61, 0.04);
+}
+.photo-density-tools summary::-webkit-details-marker {
+    display: none;
+}
+.photo-density-tools summary::after {
+    content: "+";
+    font-size: 1rem;
+    line-height: 1;
+    color: #2c5f98;
+}
+.photo-density-tools[open] summary::after {
+    content: "-";
+}
+.photo-density-tools-body {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 0.75rem;
+}
+.photo-density-tools form,
+.photo-density-tools .comment-stack {
+    background: rgba(245, 248, 251, 0.72);
+    border: 1px solid #e1e8f2;
+    border-radius: 16px;
+    padding: 0.9rem;
+}
+@media (max-width: 860px) {
+    .photo-ai-summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .photo-ai-summary-badges {
+        justify-content: flex-start;
+    }
+    .photo-quick-actions {
+        grid-template-columns: 1fr;
+    }
+    .bulk-progress-bar {
+        width: calc(100vw - 24px);
+        justify-content: space-between;
+    }
+}
+</style>
+<div class="ai-history-overlay" id="ai-history-overlay" aria-hidden="true" style="display:none;">
+    <div class="ai-history-drawer" id="ai-history-drawer" role="dialog" aria-modal="true" aria-labelledby="ai-history-title">
+        <div class="ai-history-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div>
+                <h3 id="ai-history-title">{{ t("photos_ai_history_title") }}</h3>
+                <div class="muted small" id="ai-history-subtitle"></div>
+            </div>
+            <button type="button" class="btn btn-secondary" id="ai-history-close" style="min-width:80px;">{{ t("btn_close") }}</button>
+        </div>
+        <div class="muted small" id="ai-history-snapshot"></div>
+        <div class="ai-history-list" id="ai-history-list"></div>
+    </div>
+</div>
+{% endif %}
+
+{% if pagination %}
+<section class="panel photos-pagination-panel" aria-label="Photo pagination">
+    <div class="panel-header">
+        <div>
+            <h3>{{ t("photos_page_summary", page=pagination.page, total=pagination.total_pages) }}</h3>
+            <div class="muted small">
+                {{ t("photos_page_range_summary", start=pagination.start, end=pagination.end, total=pagination.total) }}
+                {{ t("photos_page_selection_scope") }}
+            </div>
+        </div>
+        <div class="form-actions">
+            {% if pagination.has_prev %}
+            <a class="btn btn-secondary" href="{{ pagination.prev_url }}">{{ t("btn_previous") }}</a>
+            {% else %}
+            <button type="button" class="btn btn-secondary" disabled>{{ t("btn_previous") }}</button>
+            {% endif %}
+            {% if pagination.has_next %}
+            <a class="btn btn-secondary" href="{{ pagination.next_url }}">{{ t("btn_next") }}</a>
+            {% else %}
+            <button type="button" class="btn btn-secondary" disabled>{{ t("btn_next") }}</button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="card-grid photo-stream-grid">
+    {% for photo in photos %}
+    {% set media = photo_media_by_id.get(photo.id) %}
+    {% set is_video = media and media.media_kind == "video" %}
+    {% set video_detail_url = "/portal/media/" ~ media.media_asset_id if is_video and media.media_asset_id else "" %}
+    {% set photo_captured_label = photo.captured_at_utc|local_dt(timezone_name)|replace(" " ~ timezone_name, "") %}
+    {% set raw_photo_location = (photo.location or "")|trim %}
+    {% set normalized_photo_location = raw_photo_location|lower %}
+    {% set photo_location_label = raw_photo_location %}
+    {% if normalized_photo_location in ["", "-", "location unavailable", "unavailable", "unknown", "none", "null"] %}
+    {% set photo_location_label = "" %}
+    {% endif %}
+    {% if not photo_location_label and photo.gps %}
+    {% set photo_location_label = photo.gps %}
+    {% endif %}
+    {% if not photo_location_label and photo.gps_lat is not none and photo.gps_lon is not none %}
+    {% set photo_location_label = "%.6f, %.6f"|format(photo.gps_lat, photo.gps_lon) %}
+    {% endif %}
+    <article class="photo-card" id="photo-card-{{ photo.id }}" data-photo-card="{{ photo.id }}">
+        <div class="photo-thumb-shell">
+            {% if can_manage or can_reprocess or can_comment %}
+            <label class="photo-select-chip" title="{{ t('field_selected_photos') }}">
+                <input type="checkbox" name="photo_ids" value="{{ photo.id }}" form="bulk-photo-tools-form">
+            </label>
+            {% endif %}
+            {% if is_video and video_detail_url %}
+            <a class="photo-thumb-link" href="{{ video_detail_url }}">
+                <img
+                    src="{{ media.thumb_url or photo.thumb_url or media.image_url or photo.image_url }}"
+                    alt="{{ photo.original_file_name }}"
+                    class="photo-thumb"
+                    loading="lazy"
+                    decoding="async"
+                    data-image-final-fallback-src="/static/img/media-unavailable.svg"
+                    data-fallback-src="{{ media.media_url or photo.image_url }}"
+                    data-final-fallback-src="/static/img/media-unavailable.svg"
+                >
+                <span class="photo-media-badge">▶ {{ t("photos_video_badge") }}</span>
+            </a>
+            {% else %}
+            <img
+                src="{{ media.thumb_url or photo.thumb_url or media.image_url or photo.image_url }}"
+                alt="{{ photo.original_file_name }}"
+                class="photo-thumb"
+                loading="lazy"
+                decoding="async"
+                data-image-src="{{ media.image_url or photo.image_url }}"
+                data-image-final-fallback-src="/static/img/media-unavailable.svg"
+                data-fallback-src="{{ media.media_url or media.image_url or photo.image_url }}"
+                data-final-fallback-src="/static/img/media-unavailable.svg"
+                data-image-title="{{ photo_captured_label }}"
+                data-image-info="{{ t('field_project') }} {{ photo.project_id }} | {{ t('field_employee') }} {{ photo.employee_id }} | {{ photo_captured_label }}"
+                data-image-index="{{ loop.index0 }}"
+            >
+            {% if is_video %}
+            <span class="photo-media-badge">▶ {{ t("photos_video_badge") }}</span>
+            {% endif %}
+            {% endif %}
+        </div>
+        <div class="photo-body">
+            <div class="tag-row">
+                {% if is_video %}<span class="tag">{{ t("photos_video_badge") }}</span>{% endif %}
+                <span class="tag">{{ photo.project_id }}</span>
+                <span class="tag">{{ photo.employee_id }}</span>
+                <span class="tag">{{ t("status_" ~ photo.visibility.value) }}</span>
+                <span class="tag">{{ t("status_" ~ photo.approval_status.value) }}</span>
+                {% if photo.labeling_status %}<span class="tag">{{ t("status_" ~ photo.labeling_status) }}</span>{% endif %}
+                {% if photo.featured %}<span class="tag">{{ t("meta_featured") }}</span>{% endif %}
+                {% if photo.deleted %}<span class="tag">{{ t("meta_deleted") }}</span>{% endif %}
+            </div>
+            <div class="photo-meta">
+                <div class="photo-meta-line">{{ photo_captured_label }}</div>
+                <div class="photo-meta-line">{{ t("meta_location", value=photo_location_label or t("meta_none")) }}</div>
+            </div>
+            <template id="photo-detail-template-{{ photo.id }}">
+                <div class="photo-detail-meta-grid">
+                    <div><strong>{{ t("meta_gps", value=photo.gps or t("meta_none")) }}</strong></div>
+                    <div>{{ t("meta_device", device=photo.device_model or t("meta_none"), os=photo.os_version or t("meta_none"), app=photo.app_version or t("meta_none")) }}</div>
+                    <div>{{ t("meta_heading_pitch_roll", heading=photo.heading or t("meta_none"), pitch=photo.pitch or t("meta_none"), roll=photo.roll or t("meta_none")) }}</div>
+                    {% if photo.id in photo_search_scores %}
+                    <div><strong>{{ t("label_similarity") }}:</strong> {{ "%.4f"|format(photo_search_scores[photo.id]) }}</div>
+                    {% endif %}
+                </div>
+                <div class="photo-detail-workspace">
+                    <section class="photo-detail-journal-column">
+                        <div class="photo-detail-journal-title">{{ t("photos_detail_notes_comments_title") }}</div>
+                        <div class="photo-detail-journal-stack">
+                            {% for activity in photo_activity_timeline_by_photo.get(photo.id, []) %}
+                            <article class="photo-detail-journal-entry">
+                                <div class="photo-detail-journal-meta">
+                                    {{ activity.created_at|local_dt(timezone_name) }} &middot; {{ activity.actor_label }}
+                                </div>
+                                <div class="photo-detail-journal-body">{{ activity.content }}</div>
+                            </article>
+                            {% endfor %}
+                            {% if not photo_activity_timeline_by_photo.get(photo.id, []) %}
+                            <div class="muted small">{{ t("msg_no_notes_or_comments") }}</div>
+                            {% endif %}
+                        </div>
+                    </section>
+                    <section class="photo-detail-preview-column">
+                        {% if is_video %}
+                        <video
+                            class="photo-detail-video-player"
+                            controls
+                            preload="metadata"
+                            poster="{{ media.thumb_url or photo.thumb_url or '' }}"
+                        >
+                            <source src="{{ media.media_url or photo.image_url }}" type="{{ photo.mime_type or 'video/mp4' }}">
+                        </video>
+                        <div class="muted small">{{ t("photos_video_inline_hint") }}</div>
+                        {% if video_detail_url %}
+                        <div class="form-actions">
+                            <a class="btn btn-primary" href="{{ video_detail_url }}">{{ t("btn_open_video_detail") }}</a>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <button
+                            type="button"
+                            class="photo-detail-preview-frame"
+                            data-open-photo-image
+                            data-photo-id="{{ photo.id }}"
+                        >
+                            <img
+                                src="{{ media.image_url or photo.image_url }}"
+                                alt="{{ photo.original_file_name }}"
+                                class="photo-detail-preview-image"
+                                loading="lazy"
+                                decoding="async"
+                                data-final-fallback-src="/static/img/media-unavailable.svg"
+                            >
+                        </button>
+                        <div class="photo-detail-preview-caption">
+                            <strong>{{ photo_captured_label }}</strong>
+                            <div class="muted small">{{ photo_location_label or t("meta_none") }}</div>
+                        </div>
+                        <div class="muted small">{{ t("photos_detail_preview_hint") }}</div>
+                        {% endif %}
+                    </section>
+                    <section class="photo-detail-journal-column">
+                        <div class="photo-detail-journal-title">{{ t("photos_detail_ai_log_title") }}</div>
+                        <div class="photo-detail-journal-stack">
+                            {% for ai_entry in photo_ai_timeline_by_photo.get(photo.id, []) %}
+                            <article class="photo-detail-journal-entry">
+                                <div class="photo-detail-journal-meta">
+                                    {{ ai_entry.created_at|local_dt(timezone_name) }}
+                                </div>
+                                <div class="photo-detail-journal-body">{{ ai_entry.summary }}</div>
+                            </article>
+                            {% endfor %}
+                            {% if not photo_ai_timeline_by_photo.get(photo.id, []) %}
+                            <div class="muted small">{{ t("msg_no_ai_history_yet") }}</div>
+                            {% endif %}
+                        </div>
+                    </section>
+                </div>
+            </template>
+
+            <div class="photo-ai-summary-row">
+                <div class="photo-ai-summary-box" data-photo-ai-summary-wrapper="{{ photo.id }}"{% if not photo_ai_summaries.get(photo.id) %} hidden{% endif %}>
+                    <div class="photo-ai-summary-header">
+                        <div class="photo-ai-summary-title">{{ t("photos_ai_summary") }}</div>
+                        <div class="photo-ai-summary-badges">
+                            {% if photo.id in photo_ai_confidence %}
+                            <span class="tag ai-history-primary-badge">{{ t("label_ai_primary_version") }}</span>
+                            <span class="tag ai-confidence-badge-{{ photo_ai_confidence[photo.id].level }}">{{ t("photos_ai_confidence") }}: {{ photo_ai_confidence[photo.id].label }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="photo-ai-summary-text" data-photo-ai-summary="{{ photo.id }}">{{ photo_ai_summaries.get(photo.id, "") }}</div>
+                    <div class="photo-ai-summary-caption">{{ t("label_ai_summary_result") }}</div>
+                </div>
+                <div class="photo-quick-actions">
+                    {% if is_video and video_detail_url %}
+                    <a class="btn btn-primary" href="{{ video_detail_url }}">{{ t("btn_open_video_detail") }}</a>
+                    {% endif %}
+                    <button type="button" class="btn btn-secondary photo-detail-trigger" data-photo-details-button data-photo-id="{{ photo.id }}" data-photo-index="{{ loop.index0 }}" data-photo-title="{{ photo_captured_label }}">
+                        {{ t("btn_view_photo_details") }}
+                    </button>
+                    {% if can_review_ai_history and not is_video %}
+                    <button
+                        type="button"
+                        class="btn btn-secondary ai-history-button"
+                        data-ai-history-button
+                        data-photo-id="{{ photo.id }}"
+                        data-photo-name="{{ photo.original_file_name }}"
+                    >
+                        <span>{{ t("btn_view_ai_history") }}</span>
+                    </button>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if can_manage or can_reprocess or comments_by_photo.get(photo.id, []) or can_comment %}
+            <details class="photo-density-tools">
+                <summary>{{ t("photos_admin_tools_title") }}</summary>
+                <div class="photo-density-tools-body">
+                    {% if can_manage %}
+                    <div class="form-stack">
+                        <form method="post" action="/portal/photos/{{ photo.id }}/approval" class="form-stack">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                            <label>{{ t("field_approval_status") }}
+                                <select name="approval_status">
+                                    <option value="pending" {% if photo.approval_status.value == "pending" %}selected{% endif %}>{{ t("status_pending") }}</option>
+                                    <option value="approved" {% if photo.approval_status.value == "approved" %}selected{% endif %}>{{ t("status_approved") }}</option>
+                                    <option value="rejected" {% if photo.approval_status.value == "rejected" %}selected{% endif %}>{{ t("status_rejected") }}</option>
+                                </select>
+                            </label>
+                            <button type="submit" class="btn btn-primary full-width">{{ t("btn_update_approval") }}</button>
+                        </form>
+                        <form method="post" action="/portal/photos/{{ photo.id }}/visibility" class="form-stack">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                            <div class="muted small">{{ t("photos_review_status_copy") }}</div>
+                            <label>{{ t("field_visibility") }}
+                                <select name="visibility">
+                                    <option value="internal" {% if photo.visibility.value == "internal" %}selected{% endif %}>{{ t("status_internal") }}</option>
+                                    <option value="client_visible" {% if photo.visibility.value == "client_visible" %}selected{% endif %}>{{ t("status_client_visible") }}</option>
+                                </select>
+                            </label>
+                            <label class="checkbox-field">
+                                <input type="checkbox" name="featured" {% if photo.featured %}checked{% endif %}> {{ t("field_featured_pin") }}
+                            </label>
+                            <div class="muted small">{{ t("photos_featured_copy") }}</div>
+                            <label>{{ t("field_note") }}
+                                <textarea name="note" rows="2">{{ photo.note or "" }}</textarea>
+                            </label>
+                            <button type="submit" class="btn btn-secondary full-width">{{ t("btn_update_visibility") }}</button>
+                        </form>
+                        {% if photo.deleted %}
+                        <form method="post" action="/portal/photos/{{ photo.id }}/restore">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                            <button type="submit" class="btn btn-secondary full-width">{{ t("btn_restore") }}</button>
+                        </form>
+                        <form method="post" action="/portal/photos/{{ photo.id }}/destroy" onsubmit="return confirm('{{ t('msg_confirm_permanent_delete_photo') }}');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{% if filters.recycle_bin %}/portal/photos?recycle_bin=true{% else %}{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}{% endif %}">
+                            <button type="submit" class="btn btn-danger full-width">{{ t("btn_delete_permanently") }}</button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="/portal/photos/{{ photo.id }}/delete">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                            <button type="submit" class="btn btn-danger full-width">{{ t("btn_move_to_recycle_bin") }}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if can_reprocess %}
+                    <form method="post" action="/portal/photos/{{ photo.id }}/reprocess" class="form-stack">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                        <label>{{ t("field_custom_prompt") }}
+                            <textarea name="prompt" rows="2" placeholder="{{ t('field_comment_placeholder') }}"></textarea>
+                        </label>
+                        <button type="submit" class="btn btn-primary full-width">{{ t("btn_reprocess_ai") }}</button>
+                    </form>
+                    {% endif %}
+
+                    <div class="comment-stack">
+                        {% for comment in comments_by_photo.get(photo.id, []) %}
+                        <div class="comment-card">
+                            <strong>{{ comment_users[comment.user_id].display_name if comment.user_id in comment_users else t("table_user") }}</strong>
+                            <div class="muted small">{{ comment.created_at|local_dt(timezone_name) }}</div>
+                            <div>{{ comment.comment }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if can_comment %}
+                    <form method="post" action="/portal/photos/{{ photo.id }}/comments" class="form-stack">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="next_url" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+                        <label>{{ t("field_add_comment") }}
+                            <textarea name="comment" rows="2" placeholder="{{ t('field_comment_placeholder') }}"></textarea>
+                        </label>
+                        <button type="submit" class="btn btn-secondary full-width">{{ t("btn_post_comment") }}</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </article>
+    {% else %}
+    <article class="panel empty">
+        {% if show_project_assignment_hint %}
+        <strong>{{ t("empty_no_assigned_projects_title") }}</strong>
+        <div class="muted">{{ t("empty_no_assigned_projects_help") }}</div>
+        {% else %}
+        {{ t("empty_no_project_photos") }}
+        {% endif %}
+    </article>
+    {% endfor %}
+</section>
+{% if pagination and pagination.total_pages > 1 %}
+<section class="panel photos-pagination-panel" aria-label="Photo pagination bottom">
+    <div class="panel-header">
+        <div class="muted small">{{ t("photos_page_summary", page=pagination.page, total=pagination.total_pages) }}</div>
+        <div class="form-actions">
+            {% if pagination.has_prev %}
+            <a class="btn btn-secondary" href="{{ pagination.prev_url }}">{{ t("btn_previous") }}</a>
+            {% endif %}
+            {% if pagination.has_next %}
+            <a class="btn btn-secondary" href="{{ pagination.next_url }}">{{ t("btn_next") }}</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+<div class="photo-detail-modal" id="photo-detail-modal" hidden>
+    <div class="photo-detail-modal-backdrop" data-photo-details-close></div>
+    <div class="photo-detail-modal-panel">
+        <div class="panel-header">
+            <h3 id="photo-detail-modal-title">{{ t("photos_details_title") }}</h3>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-photo-details-prev>{{ t("btn_previous") }}</button>
+                <button type="button" class="btn btn-secondary" data-photo-details-next>{{ t("btn_next") }}</button>
+            </div>
+            <button type="button" class="btn btn-secondary" data-photo-details-close>{{ t("btn_close") }}</button>
+        </div>
+        <div class="photo-detail-modal-content" id="photo-detail-modal-content"></div>
+    </div>
+</div>
+<script>
+(() => {
+    const detailModal = document.getElementById("photo-detail-modal");
+    const detailModalTitle = document.getElementById("photo-detail-modal-title");
+    const detailModalContent = document.getElementById("photo-detail-modal-content");
+    const detailCloseButtons = Array.from(document.querySelectorAll("[data-photo-details-close]"));
+    const detailTriggers = Array.from(document.querySelectorAll("[data-photo-details-button]"));
+    const detailPrevButtons = Array.from(document.querySelectorAll("[data-photo-details-prev]"));
+    const detailNextButtons = Array.from(document.querySelectorAll("[data-photo-details-next]"));
+    let lastDetailTrigger = null;
+    let currentDetailIndex = -1;
+
+    const closeDetailModal = () => {
+        if (!detailModal) {
+            return;
+        }
+        detailModal.hidden = true;
+        document.body.style.overflow = "";
+        detailModalContent.innerHTML = "";
+        currentDetailIndex = -1;
+        if (lastDetailTrigger instanceof HTMLElement) {
+            lastDetailTrigger.focus({ preventScroll: true });
+        }
+    };
+
+    const openDetailModal = (trigger) => {
+        if (!detailModal || !detailModalContent) {
+            return;
+        }
+        const template = document.getElementById(`photo-detail-template-${trigger.dataset.photoId}`);
+        if (!(template instanceof HTMLElement)) {
+            return;
+        }
+        lastDetailTrigger = trigger;
+        const explicitIndex = Number.parseInt(String(trigger.dataset.photoIndex || ""), 10);
+        currentDetailIndex = Number.isFinite(explicitIndex) ? explicitIndex : detailTriggers.indexOf(trigger);
+        detailModalTitle.textContent = trigger.dataset.photoTitle || "{{ t('photos_details_title') }}";
+        detailModalContent.innerHTML = template.innerHTML;
+        const previewButton = detailModalContent.querySelector("[data-open-photo-image]");
+        if (previewButton instanceof HTMLElement) {
+            previewButton.addEventListener("click", () => {
+                const sourceImage = document.querySelector(
+                    `[data-photo-card="${trigger.dataset.photoId}"] [data-image-src][data-image-title]`,
+                );
+                if (sourceImage instanceof HTMLElement) {
+                    closeDetailModal();
+                    sourceImage.click();
+                }
+            });
+        }
+        detailModal.hidden = false;
+        document.body.style.overflow = "hidden";
+    };
+
+    const moveDetailModal = (direction) => {
+        if (!detailTriggers.length) {
+            return;
+        }
+        const explicitIndex = Number.parseInt(String(lastDetailTrigger?.dataset.photoIndex || ""), 10);
+        const baseIndex =
+            currentDetailIndex >= 0
+                ? currentDetailIndex
+                : Number.isFinite(explicitIndex)
+                    ? explicitIndex
+                    : 0;
+        const nextIndex = (baseIndex + direction + detailTriggers.length) % detailTriggers.length;
+        const nextTrigger = detailTriggers[nextIndex];
+        if (nextTrigger instanceof HTMLElement) {
+            openDetailModal(nextTrigger);
+        }
+    };
+
+    detailTriggers.forEach((button) => {
+        button.addEventListener("click", () => openDetailModal(button));
+    });
+    detailPrevButtons.forEach((button) => {
+        button.addEventListener("click", () => moveDetailModal(-1));
+    });
+    detailNextButtons.forEach((button) => {
+        button.addEventListener("click", () => moveDetailModal(1));
+    });
+    detailCloseButtons.forEach((button) => {
+        button.addEventListener("click", closeDetailModal);
+    });
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && detailModal && !detailModal.hidden) {
+            event.preventDefault();
+            closeDetailModal();
+            return;
+        }
+        if (detailModal && !detailModal.hidden && event.key === "ArrowLeft") {
+            event.preventDefault();
+            moveDetailModal(-1);
+            return;
+        }
+        if (detailModal && !detailModal.hidden && event.key === "ArrowRight") {
+            event.preventDefault();
+            moveDetailModal(1);
+        }
+    });
+
+    const bulkBar = document.getElementById("bulk-progress-bar");
+    const bulkCount = document.getElementById("bulk-progress-count");
+    const bulkForm = document.getElementById("bulk-photo-tools-form");
+    const bulkPromptField = bulkForm ? bulkForm.querySelector('textarea[name="prompt"]') : null;
+    const compareButtons = Array.from(document.querySelectorAll("[data-progress-compare-open]"));
+    const bulkReviewButtons = Array.from(document.querySelectorAll("[data-bulk-review-open]"));
+    const bulkAnnotateButtons = Array.from(document.querySelectorAll("[data-bulk-annotate-open]"));
+    const bulkClientPublishButtons = Array.from(document.querySelectorAll("[data-bulk-client-publish]"));
+    const selectVisibleButton = document.getElementById("select-visible-photos");
+    const clearSelectionButton = document.getElementById("clear-photo-selection");
+    const promptModal = document.getElementById("progress-report-prompt-modal");
+    const bulkReviewModal = document.getElementById("bulk-review-modal");
+    const bulkAnnotateModal = document.getElementById("bulk-annotate-modal");
+    const promptTextarea = document.getElementById("progress-report-prompt-textarea");
+    const promptSubmitButton = document.getElementById("progress-report-submit");
+    const promptCloseButtons = Array.from(document.querySelectorAll("[data-progress-prompt-close]"));
+    const bulkReviewCloseButtons = Array.from(document.querySelectorAll("[data-bulk-review-close]"));
+    const bulkAnnotateCloseButtons = Array.from(document.querySelectorAll("[data-bulk-annotate-close]"));
+    const bulkReviewVisibilityField = document.getElementById("bulk-review-visibility");
+    const bulkReviewApprovalField = document.getElementById("bulk-review-approval-status");
+    const selectedCountNode = document.getElementById("progress-report-selected-count");
+    const bulkReviewSelectedCountNode = document.getElementById("bulk-review-selected-count");
+    const bulkAnnotateSelectedCountNode = document.getElementById("bulk-annotate-selected-count");
+    const checkboxes = Array.from(document.querySelectorAll('input[name="photo_ids"][form="bulk-photo-tools-form"]'));
+    const focusedPhotoId = {{ focused_photo_id|tojson }};
+    let lastPromptTrigger = null;
+    let lastBulkReviewTrigger = null;
+    let lastBulkAnnotateTrigger = null;
+    if (!bulkBar || !bulkCount || !bulkForm || !checkboxes.length) {
+        return;
+    }
+
+    const selectedCheckboxes = () => checkboxes.filter((item) => item.checked);
+
+    const updateBulkBar = () => {
+        let count = 0;
+        checkboxes.forEach((item) => {
+            const card = item.closest("[data-photo-card]");
+            const checked = Boolean(item.checked);
+            if (card) {
+                card.classList.toggle("is-selected", checked);
+            }
+            if (checked) {
+                count += 1;
+            }
+        });
+        bulkBar.hidden = count < 1;
+        bulkCount.textContent = "{{ t('msg_progress_report_selection_count', count='__COUNT__') }}".replace("__COUNT__", String(count));
+        if (selectedCountNode) {
+            selectedCountNode.textContent = "{{ t('msg_progress_report_selection_count', count='__COUNT__') }}".replace("__COUNT__", String(count));
+        }
+        if (bulkReviewSelectedCountNode) {
+            bulkReviewSelectedCountNode.textContent = "{{ t('msg_progress_report_selection_count', count='__COUNT__') }}".replace("__COUNT__", String(count));
+        }
+        if (bulkAnnotateSelectedCountNode) {
+            bulkAnnotateSelectedCountNode.textContent = "{{ t('msg_progress_report_selection_count', count='__COUNT__') }}".replace("__COUNT__", String(count));
+        }
+    };
+
+    const closePromptModal = () => {
+        if (!promptModal) {
+            return;
+        }
+        promptModal.hidden = true;
+        document.body.style.overflow = "";
+        if (lastPromptTrigger instanceof HTMLElement) {
+            lastPromptTrigger.focus({ preventScroll: true });
+        }
+    };
+
+    const closeGenericModal = (modal, trigger) => {
+        if (!modal) {
+            return;
+        }
+        modal.hidden = true;
+        document.body.style.overflow = "";
+        if (trigger instanceof HTMLElement) {
+            trigger.focus({ preventScroll: true });
+        }
+    };
+
+    const openPromptModal = (trigger) => {
+        if (!promptModal || !promptTextarea || selectedCheckboxes().length < 2) {
+            return;
+        }
+        lastPromptTrigger = trigger instanceof HTMLElement ? trigger : null;
+        promptTextarea.value = bulkPromptField instanceof HTMLTextAreaElement ? bulkPromptField.value : "";
+        promptModal.hidden = false;
+        document.body.style.overflow = "hidden";
+        window.setTimeout(() => promptTextarea.focus(), 40);
+        updateBulkBar();
+    };
+
+    const ensureSelectionForBulkAction = () => {
+        if (selectedCheckboxes().length > 0) {
+            return true;
+        }
+        window.alert({{ t('msg_bulk_photo_selection_required')|tojson }});
+        return false;
+    };
+
+    const confirmBulkAction = (template) => {
+        if (!ensureSelectionForBulkAction()) {
+            return false;
+        }
+        if (!template) {
+            return true;
+        }
+        const count = selectedCheckboxes().length;
+        return window.confirm(String(template).replaceAll("__COUNT__", String(count)));
+    };
+
+    const openBulkReviewModal = (trigger) => {
+        if (!bulkReviewModal || !ensureSelectionForBulkAction()) {
+            return;
+        }
+        lastBulkReviewTrigger = trigger instanceof HTMLElement ? trigger : null;
+        bulkReviewModal.hidden = false;
+        document.body.style.overflow = "hidden";
+        updateBulkBar();
+        const firstField = document.getElementById("bulk-review-visibility");
+        if (firstField instanceof HTMLElement) {
+            window.setTimeout(() => firstField.focus(), 40);
+        }
+    };
+
+    const openBulkAnnotateModal = (trigger) => {
+        if (!bulkAnnotateModal || !ensureSelectionForBulkAction()) {
+            return;
+        }
+        lastBulkAnnotateTrigger = trigger instanceof HTMLElement ? trigger : null;
+        bulkAnnotateModal.hidden = false;
+        document.body.style.overflow = "hidden";
+        updateBulkBar();
+        const firstField = document.getElementById("bulk-note-textarea");
+        if (firstField instanceof HTMLElement) {
+            window.setTimeout(() => firstField.focus(), 40);
+        }
+    };
+
+    checkboxes.forEach((checkbox) => checkbox.addEventListener("change", updateBulkBar));
+    compareButtons.forEach((button) => {
+        button.addEventListener("click", () => openPromptModal(button));
+    });
+    bulkReviewButtons.forEach((button) => {
+        button.addEventListener("click", () => openBulkReviewModal(button));
+    });
+    bulkAnnotateButtons.forEach((button) => {
+        button.addEventListener("click", () => openBulkAnnotateModal(button));
+    });
+    bulkClientPublishButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!confirmBulkAction(bulkForm.dataset.confirmPublish || "")) {
+                return;
+            }
+            if (bulkReviewVisibilityField instanceof HTMLSelectElement) {
+                bulkReviewVisibilityField.value = "client_visible";
+            }
+            if (bulkReviewApprovalField instanceof HTMLSelectElement) {
+                bulkReviewApprovalField.value = "approved";
+            }
+            bulkForm.action = "/portal/photos/bulk/review";
+            bulkForm.requestSubmit();
+        });
+    });
+    if (selectVisibleButton) {
+        selectVisibleButton.addEventListener("click", () => {
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = true;
+            });
+            updateBulkBar();
+        });
+    }
+    if (clearSelectionButton) {
+        clearSelectionButton.addEventListener("click", () => {
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+            updateBulkBar();
+        });
+    }
+    promptCloseButtons.forEach((button) => {
+        button.addEventListener("click", closePromptModal);
+    });
+    bulkReviewCloseButtons.forEach((button) => {
+        button.addEventListener("click", () => closeGenericModal(bulkReviewModal, lastBulkReviewTrigger));
+    });
+    bulkAnnotateCloseButtons.forEach((button) => {
+        button.addEventListener("click", () => closeGenericModal(bulkAnnotateModal, lastBulkAnnotateTrigger));
+    });
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && promptModal && !promptModal.hidden) {
+            event.preventDefault();
+            closePromptModal();
+        }
+        if (event.key === "Escape" && bulkReviewModal && !bulkReviewModal.hidden) {
+            event.preventDefault();
+            closeGenericModal(bulkReviewModal, lastBulkReviewTrigger);
+        }
+        if (event.key === "Escape" && bulkAnnotateModal && !bulkAnnotateModal.hidden) {
+            event.preventDefault();
+            closeGenericModal(bulkAnnotateModal, lastBulkAnnotateTrigger);
+        }
+    });
+    bulkForm.addEventListener("submit", (event) => {
+        const submitter = event.submitter;
+        if (!(submitter instanceof HTMLButtonElement)) {
+            return;
+        }
+        const actionTarget = submitter.getAttribute("formaction") || bulkForm.getAttribute("action") || "";
+        let confirmTemplate = "";
+        if (actionTarget.endsWith("/bulk/delete")) {
+            confirmTemplate = bulkForm.dataset.confirmDelete || "";
+        } else if (actionTarget.endsWith("/bulk/review")) {
+            confirmTemplate = bulkForm.dataset.confirmReview || "";
+        } else if (actionTarget.endsWith("/bulk/annotate")) {
+            confirmTemplate = bulkForm.dataset.confirmAnnotate || "";
+        } else if (actionTarget.endsWith("/reports/generate")) {
+            confirmTemplate = bulkForm.dataset.confirmReport || "";
+        } else if (actionTarget.endsWith("/photos/reprocess")) {
+            confirmTemplate = bulkForm.dataset.confirmReprocess || "";
+        }
+        if (confirmTemplate && !confirmBulkAction(confirmTemplate)) {
+            event.preventDefault();
+            return;
+        }
+    });
+    if (promptSubmitButton && promptTextarea) {
+        promptSubmitButton.addEventListener("click", () => {
+            if (selectedCheckboxes().length < 2) {
+                closePromptModal();
+                return;
+            }
+            if (bulkPromptField instanceof HTMLTextAreaElement) {
+                bulkPromptField.value = promptTextarea.value.trim();
+            }
+            bulkForm.action = "/portal/reports/compare-progress";
+            bulkForm.requestSubmit();
+        });
+    }
+    updateBulkBar();
+
+    if (focusedPhotoId) {
+        const focusedCard = document.querySelector(`[data-photo-card="${focusedPhotoId}"]`);
+        const focusedTrigger = document.querySelector(`[data-photo-details-button][data-photo-id="${focusedPhotoId}"]`);
+        if (focusedCard instanceof HTMLElement) {
+            focusedCard.classList.add("is-focused");
+            window.setTimeout(() => {
+                focusedCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 120);
+        }
+        if (focusedTrigger instanceof HTMLElement) {
+            window.setTimeout(() => openDetailModal(focusedTrigger), 260);
+        }
+    }
+})();
+
+(() => {
+    const overlay = document.getElementById("ai-history-overlay");
+    const drawer = document.getElementById("ai-history-drawer");
+    const closeBtn = document.getElementById("ai-history-close");
+    const historyList = document.getElementById("ai-history-list");
+    const historyTitle = document.getElementById("ai-history-title");
+    const historySubtitle = document.getElementById("ai-history-subtitle");
+    const historySnapshot = document.getElementById("ai-history-snapshot");
+    const csrfToken = "{{ csrf_token }}";
+    const primaryVersionLabel = "{{ t('label_ai_primary_version') }}";
+    const setPrimaryLabel = "{{ t('btn_set_primary_ai_log') }}";
+    const summaryLabel = "{{ t('label_ai_summary_result') }}";
+    const snapshotPrefix = "{{ t('label_current_snapshot') }}";
+    const snapshotEmpty = "{{ t('msg_no_active_ai_summary') }}";
+
+    if (!overlay || !drawer || !closeBtn || !historyList) return;
+
+    let activePhotoId = null;
+    let activeRequestToken = 0;
+    let closeTimer = null;
+    let lastTriggerButton = null;
+    let previousBodyOverflow = "";
+
+    const escapeHtml = (value) => {
+        return String(value || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    };
+
+    const updatePhotoSummary = (photoId, snapshot) => {
+        const wrapper = document.querySelector(`[data-photo-ai-summary-wrapper="${photoId}"]`);
+        const summaryNode = document.querySelector(`[data-photo-ai-summary="${photoId}"]`);
+        const summary = snapshot && snapshot.ai_summary ? String(snapshot.ai_summary) : "";
+        if (!wrapper || !summaryNode) {
+            return;
+        }
+        summaryNode.textContent = summary;
+        wrapper.hidden = !summary;
+    };
+
+    const updatePhotoConfidence = (photoId, confidenceLabel, confidenceLevel) => {
+        const wrapper = document.querySelector(`[data-photo-ai-confidence-wrapper="${photoId}"]`);
+        const label = document.querySelector(`[data-photo-ai-confidence-label="${photoId}"]`);
+        if (!wrapper || !label) {
+            return;
+        }
+        if (!confidenceLabel || !confidenceLevel) {
+            wrapper.hidden = true;
+            label.textContent = "";
+            label.className = "tag";
+            return;
+        }
+        wrapper.hidden = false;
+        label.textContent = `{{ t("photos_ai_confidence") }}: ${confidenceLabel}`;
+        label.className = `tag ai-confidence-badge-${confidenceLevel}`;
+    };
+
+    const renderHistory = (payload) => {
+        const logs = Array.isArray(payload.logs) ? payload.logs : [];
+        const snapshot = payload.snapshot || {};
+        historySnapshot.textContent = snapshot.ai_summary
+            ? `${snapshotPrefix}: ${snapshot.ai_summary}`
+            : `${snapshotPrefix}: ${snapshotEmpty}`;
+        historyList.innerHTML = logs.length
+            ? logs.map((log) => {
+                const resultData = log.result_data || {};
+                const summary = resultData.ai_summary ? `<div class="ai-history-result"><strong>${escapeHtml(summaryLabel)}:</strong> ${escapeHtml(resultData.ai_summary)}</div>` : "";
+                const rejectButton = log.status === "active"
+                    ? `<button type="button" class="btn btn-secondary" data-ai-log-reject="${escapeHtml(log.id)}">{{ t("btn_reject_ai_log") }}</button>`
+                    : "";
+                const isPrimary = payload.primary_log_id && payload.primary_log_id === log.id;
+                const primaryBadge = isPrimary ? `<span class="tag ai-history-primary-badge">${escapeHtml(primaryVersionLabel)}</span>` : "";
+                const promoteButton = !isPrimary
+                    ? `<button type="button" class="btn btn-primary" data-ai-log-promote="${escapeHtml(log.id)}">${escapeHtml(setPrimaryLabel)}</button>`
+                    : "";
+                return `
+                    <article class="ai-history-entry ${isPrimary ? "ai-history-entry-primary" : ""}">
+                        <div class="ai-history-meta">
+                            <div><strong>{{ t("table_when") }}:</strong> ${escapeHtml(log.created_at || "")}</div>
+                            <div><strong>{{ t("field_analysis_type") }}:</strong> ${escapeHtml(log.analysis_type || "")}</div>
+                            <div><strong>{{ t("field_model") }}:</strong> ${escapeHtml(log.model_used || "")}</div>
+                            <div><strong>{{ t("table_status") }}:</strong> ${escapeHtml(log.status || "")} ${primaryBadge}</div>
+                        </div>
+                        <div class="ai-history-prompt"><strong>{{ t("field_prompt_used") }}:</strong> ${escapeHtml(log.prompt_used || "")}</div>
+                        ${summary}
+                        <div class="form-actions">${promoteButton}${rejectButton}</div>
+                    </article>
+                `;
+            }).join("")
+            : `<article class="panel empty">{{ t("empty_no_ai_history") }}</article>`;
+        updatePhotoSummary(payload.photo_id, snapshot);
+        updatePhotoConfidence(payload.photo_id, payload.confidence_label, payload.confidence_level);
+    };
+
+    const openDrawer = (photoId, photoName) => {
+        activePhotoId = photoId;
+        historyTitle.textContent = "{{ t('photos_ai_history_title') }}";
+        historySubtitle.textContent = `${photoName} (#${photoId})`;
+        historySnapshot.textContent = "{{ t('msg_ai_history_loading') }}";
+        historyList.innerHTML = `<article class="panel empty">{{ t("msg_ai_history_loading") }}</article>`;
+
+        if (closeTimer !== null) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+        previousBodyOverflow = document.body.style.overflow;
+        overlay.style.display = "flex";
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+
+        window.setTimeout(() => {
+            overlay.classList.add("is-open");
+        }, 10);
+    };
+
+    const loadHistory = async (photoId, photoName) => {
+        const requestToken = ++activeRequestToken;
+        openDrawer(photoId, photoName);
+
+        const response = await fetch(`/portal/photos/${photoId}/ai_logs`, {
+            headers: { "Accept": "application/json" },
+            credentials: "same-origin",
+            cache: "no-store",
+        });
+        if (requestToken !== activeRequestToken || activePhotoId !== photoId) {
+            return;
+        }
+        if (!response.ok) {
+            historyList.innerHTML = `<article class="panel empty">{{ t("msg_ai_history_load_failed") }}</article>`;
+            historySnapshot.textContent = "";
+            return;
+        }
+        renderHistory(await response.json());
+    };
+
+    const closeDrawer = () => {
+        if (overlay.style.display === "none") {
+            return;
+        }
+        activeRequestToken += 1;
+        overlay.classList.remove("is-open");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = previousBodyOverflow;
+
+        if (closeTimer !== null) {
+            window.clearTimeout(closeTimer);
+        }
+        closeTimer = window.setTimeout(() => {
+            overlay.style.display = "none";
+            activePhotoId = null;
+            closeTimer = null;
+        }, 220);
+
+        if (lastTriggerButton instanceof HTMLElement) {
+            lastTriggerButton.focus({ preventScroll: true });
+        }
+    };
+
+    document.querySelectorAll("[data-ai-history-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+            lastTriggerButton = button;
+            loadHistory(button.dataset.photoId, button.dataset.photoName || "Photo");
+        });
+    });
+
+    closeBtn.addEventListener("click", (event) => {
+        event.stopImmediatePropagation();
+        closeDrawer();
+    });
+
+    drawer.addEventListener("click", (event) => {
+        event.stopPropagation();
+    });
+
+    overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+            closeDrawer();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && overlay.style.display !== "none") {
+            event.preventDefault();
+            closeDrawer();
+        }
+    });
+
+    historyList.addEventListener("click", async (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        const logId = target.dataset.aiLogReject;
+        const promoteLogId = target.dataset.aiLogPromote;
+        if ((!logId && !promoteLogId) || !activePhotoId) {
+            return;
+        }
+        target.setAttribute("disabled", "disabled");
+        const response = await fetch(
+            logId ? `/portal/ai_logs/${logId}/status` : `/portal/ai_logs/${promoteLogId}/promote`,
+            {
+            method: logId ? "PATCH" : "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-CSRF-Token": csrfToken,
+            },
+            credentials: "same-origin",
+            body: logId ? JSON.stringify({ status: "rejected" }) : null,
+        });
+        if (!response.ok) {
+            target.removeAttribute("disabled");
+            return;
+        }
+        const payload = await response.json();
+        updatePhotoSummary(payload.photo_id, payload.snapshot || {});
+        updatePhotoConfidence(payload.photo_id, payload.confidence_label, payload.confidence_level);
+        const refreshResponse = await fetch(`/portal/photos/${activePhotoId}/ai_logs`, {
+            headers: { "Accept": "application/json" },
+            credentials: "same-origin",
+            cache: "no-store",
+        });
+        if (refreshResponse.ok) {
+            renderHistory(await refreshResponse.json());
+        }
+    });
+
+})();
+</script>
+{% endblock %}

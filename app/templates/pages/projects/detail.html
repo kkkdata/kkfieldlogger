@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+<section class="panel hero-panel">
+    <div class="panel-header">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_project", project_id=project.project_id) }}</div>
+            <h2>{{ project.project_id }} - {{ project.project_name }}</h2>
+            <div class="section-subtitle">{{ t("project_detail_workspace_copy") }}</div>
+        </div>
+        {% if can_manage_project_settings %}
+        <a class="btn btn-secondary" href="/portal/projects/{{ project.project_id }}/export">{{ t("btn_export_photo_pack") }}</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="metric-grid">
+    {% for label, value in stats.items() %}
+    <article class="metric-card">
+        <span class="metric-label">{{ t("stat_" ~ label) }}</span>
+        <strong>{{ value }}</strong>
+    </article>
+    {% endfor %}
+</section>
+
+<div class="panel-grid">
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("nav_projects") }}</div>
+                <h2>{{ project.project_name }}</h2>
+            </div>
+        </div>
+        <p><strong>{{ t("field_client_name") }}:</strong> {{ project.client_name }}</p>
+        <p><strong>{{ t("field_location") }}:</strong> {{ project.location }}</p>
+        <p><strong>{{ t("field_status") }}:</strong> {{ t("status_" ~ project.status.value) }}</p>
+        <div class="form-stack" style="margin-top:1rem;">
+            <label><strong>{{ t("field_image_video_ai_prompt") }}</strong></label>
+            <div class="muted">{{ project.image_video_ai_prompt or t("empty_project_prompt") }}</div>
+            <label><strong>{{ t("field_billing_receipt_ai_prompt") }}</strong></label>
+            <div class="muted">{{ project.billing_receipt_ai_prompt or t("empty_project_prompt") }}</div>
+        </div>
+    </section>
+
+    <aside class="panel table-panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("projects_members") }}</div>
+                <h3>{{ t("projects_members") }}</h3>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ t("table_user") }}</th>
+                        <th>{{ t("table_role") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>{{ member.display_name }}</td>
+                        <td>{{ t("role_" ~ member.role.value) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="2" class="empty">{{ t("empty_no_members") }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </aside>
+</div>
+
+{% if can_manage_project_settings %}
+<section class="panel">
+    <div class="panel-header">
+        <h3>{{ t("projects_settings_title") }}</h3>
+    </div>
+    <form method="post" action="/portal/projects/{{ project.project_id }}/update" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>{{ t("field_project_name") }}
+            <input type="text" name="project_name" value="{{ project.project_name }}" required>
+        </label>
+        <label>{{ t("field_client_name") }}
+            <input type="text" name="client_name" value="{{ project.client_name }}" required>
+        </label>
+        <label>{{ t("field_location") }}
+            <input type="text" name="location" value="{{ project.location }}" required>
+        </label>
+        <label>{{ t("field_status") }}
+            <select name="status_value">
+                <option value="active" {% if project.status.value == "active" %}selected{% endif %}>{{ t("status_active") }}</option>
+                <option value="on_hold" {% if project.status.value == "on_hold" %}selected{% endif %}>{{ t("status_on_hold") }}</option>
+                <option value="completed" {% if project.status.value == "completed" %}selected{% endif %}>{{ t("status_completed") }}</option>
+                <option value="archived" {% if project.status.value == "archived" %}selected{% endif %}>{{ t("status_archived") }}</option>
+            </select>
+        </label>
+        <label style="grid-column: 1 / -1;">{{ t("field_image_video_ai_prompt") }}
+            <textarea
+                name="image_video_ai_prompt"
+                rows="5"
+                placeholder="{{ t('placeholder_image_video_ai_prompt') }}"
+            >{{ project.image_video_ai_prompt or "" }}</textarea>
+        </label>
+        <label style="grid-column: 1 / -1;">{{ t("field_billing_receipt_ai_prompt") }}
+            <textarea
+                name="billing_receipt_ai_prompt"
+                rows="5"
+                placeholder="{{ t('placeholder_billing_receipt_ai_prompt') }}"
+            >{{ project.billing_receipt_ai_prompt or "" }}</textarea>
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_save_project_settings") }}</button>
+        </div>
+    </form>
+</section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>{{ t("projects_recent_gallery") }}</h2>
+    </div>
+    <div class="card-grid">
+        {% for photo in recent_photos %}
+        <article class="photo-card">
+            <img
+                src="{{ photo.thumb_url or photo.image_url }}"
+                alt="{{ photo.original_file_name }}"
+                class="photo-thumb"
+                data-image-src="{{ photo.image_url }}"
+                data-image-title="{{ photo.original_file_name }}"
+                data-image-info="{{ t('field_employee') }} {{ photo.employee_id }} | {{ photo.captured_at_utc|local_dt(timezone_name) }}"
+            >
+            <div class="photo-body">
+                <div class="tag-row">
+                    <span class="tag">{{ photo.employee_id }}</span>
+                    {% if photo.featured %}<span class="tag">{{ t("meta_featured") }}</span>{% endif %}
+                    {% if photo.approval_status.value == "approved" %}<span class="tag">{{ t("meta_approved") }}</span>{% endif %}
+                </div>
+                <div class="photo-meta">
+                    <div>{{ photo.captured_at_utc|local_dt(timezone_name) }}</div>
+                    <div>{{ photo.location or t("meta_none") }}</div>
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_project_gallery") }}</article>
+        {% endfor %}
+    </div>
+</section>
+</div>
+{% endblock %}

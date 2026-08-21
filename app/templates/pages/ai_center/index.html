@@ -1,0 +1,691 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.ai-center-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.ai-center-stat {
+    border: 1px solid #d7dfeb;
+    border-radius: 16px;
+    padding: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+.ai-center-stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #173a63;
+}
+.ai-center-list {
+    display: grid;
+    gap: 1rem;
+}
+.ai-center-camera-health {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.ai-center-storage-monitor {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.ai-center-system-health {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.ai-center-gpu-monitor {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.gpu-monitor-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+.gpu-monitor-bars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(4px, 1fr));
+    gap: 3px;
+    align-items: end;
+    min-height: 72px;
+    padding: 0.75rem;
+    border: 1px solid #d7dfeb;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+}
+.gpu-monitor-bar {
+    min-height: 4px;
+    border-radius: 999px 999px 2px 2px;
+    background: linear-gradient(180deg, #2c5f98 0%, #74a9dc 100%);
+}
+.gpu-monitor-level-pressure {
+    border-color: #b63b31;
+    box-shadow: 0 0 0 2px rgba(182, 59, 49, 0.12);
+}
+.gpu-monitor-level-watch,
+.gpu-monitor-level-stale {
+    border-color: #d28a1d;
+    box-shadow: 0 0 0 2px rgba(210, 138, 29, 0.12);
+}
+.ai-center-camera-health .panel {
+    margin: 0;
+}
+.ai-center-storage-warning {
+    border-color: #d28a1d;
+    box-shadow: 0 0 0 2px rgba(210, 138, 29, 0.12);
+}
+.ai-center-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.ai-center-filter {
+    border: 1px solid #c7d5e8;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    background: #fff;
+    color: #173a63;
+    font-weight: 700;
+    cursor: pointer;
+}
+.ai-center-filter-active {
+    background: #173a63;
+    color: #fff;
+    border-color: #173a63;
+}
+.ai-center-task {
+    border: 1px solid #d7dfeb;
+    border-radius: 18px;
+    padding: 1rem;
+    background: #fff;
+}
+.ai-center-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+.ai-center-task-meta {
+    display: grid;
+    gap: 0.35rem;
+}
+.ai-center-progress {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: #e7eef8;
+    overflow: hidden;
+    margin: 0.75rem 0;
+}
+.ai-center-progress > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #2c5f98 0%, #4f8ed1 100%);
+    border-radius: inherit;
+}
+.ai-center-task-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.ai-center-task-error {
+    margin-top: 0.85rem;
+    border: 1px solid rgba(209, 87, 106, 0.24);
+    border-radius: 14px;
+    background: rgba(248, 219, 223, 0.32);
+    padding: 0.75rem 0.85rem;
+    word-break: break-word;
+}
+.ai-center-task-error strong {
+    color: #8f2d3d;
+}
+.ai-center-task-error details {
+    margin-top: 0.55rem;
+}
+.ai-center-task-error summary {
+    cursor: pointer;
+    color: #173a63;
+    font-weight: 800;
+}
+.ai-center-task-error pre {
+    max-height: 220px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0.55rem 0 0;
+    padding: 0.7rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.76);
+}
+.ai-center-task-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.ai-center-task-attention {
+    border-color: #d28a1d;
+    box-shadow: 0 0 0 2px rgba(210, 138, 29, 0.12);
+}
+@media (max-width: 900px) {
+    .gpu-monitor-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="page-stack">
+<section class="panel hero-panel">
+    <div class="panel-header">
+        <div class="hero-copy">
+            <div class="section-eyebrow">{{ t("page_ai_center") }}</div>
+            <h2>{{ t("ai_center_title") }}</h2>
+            <div class="section-subtitle">{{ t("ai_center_copy") }}</div>
+        </div>
+        <div class="muted small" id="ai-center-updated-at">{{ t("ai_center_updated_at", value=center_payload.updated_at) }}</div>
+    </div>
+</section>
+
+<section class="ai-center-summary" id="ai-center-summary"></section>
+<section class="ai-center-system-health" id="system-health"></section>
+<section class="ai-center-gpu-monitor" id="gpu-monitor"></section>
+<section class="ai-center-storage-monitor" id="storage-monitor"></section>
+<section class="ai-center-camera-health" id="camera-health"></section>
+<section class="ai-center-filters" id="ai-center-filters"></section>
+<section class="ai-center-list" id="ai-center-list"></section>
+</div>
+
+<script>
+(() => {
+    const summaryRoot = document.getElementById("ai-center-summary");
+    const systemHealthRoot = document.getElementById("system-health");
+    const gpuMonitorRoot = document.getElementById("gpu-monitor");
+    const storageMonitorRoot = document.getElementById("storage-monitor");
+    const cameraHealthRoot = document.getElementById("camera-health");
+    const filtersRoot = document.getElementById("ai-center-filters");
+    const listRoot = document.getElementById("ai-center-list");
+    const updatedAt = document.getElementById("ai-center-updated-at");
+    if (!summaryRoot || !systemHealthRoot || !gpuMonitorRoot || !storageMonitorRoot || !cameraHealthRoot || !filtersRoot || !listRoot || !updatedAt) {
+        return;
+    }
+
+    const labels = {
+        total: "{{ t('ai_center_total_tasks') }}",
+        completed: "{{ t('ai_center_completed_tasks') }}",
+        queued: "{{ t('ai_center_queued_tasks') }}",
+        running: "{{ t('ai_center_running_tasks') }}",
+        failed: "{{ t('ai_center_failed_tasks') }}",
+        deadLetter: "{{ t('ai_center_dead_letter_tasks') }}",
+        updatedAt: "{{ t('ai_center_updated_at', value='__VALUE__') }}",
+        openRelated: "{{ t('ai_center_open_related') }}",
+        progress: "{{ t('ai_center_progress') }}",
+        eta: "{{ t('table_eta') }}",
+        attempts: "{{ t('label_attempts') }}",
+        empty: "{{ t('empty_no_ai_tasks') }}",
+        allFilter: "{{ t('ai_center_filter_all') }}",
+        photoFilter: "{{ t('ai_center_filter_photo') }}",
+        reportFilter: "{{ t('ai_center_filter_report') }}",
+        cameraFilter: "{{ t('ai_center_filter_camera') }}",
+        copilotFilter: "{{ t('ai_center_filter_copilot') }}",
+        annotationFilter: "{{ t('ai_center_filter_annotation') }}",
+        deadLetterFilter: "{{ t('ai_center_filter_dead_letter') }}",
+        retryTask: "{{ t('btn_retry_task') }}",
+        retryTaskHint: "{{ t('ai_center_retry_task_hint') }}",
+        cameraHealthTitle: "{{ t('camera_health_title') }}",
+        cameraAttention: "{{ t('label_camera_attention') }}",
+        cameraOnline: "{{ t('label_camera_online') }}",
+        cameraOffline: "{{ t('label_camera_offline') }}",
+        cameraError: "{{ t('label_camera_error') }}",
+        cameraEnabled: "{{ t('label_camera_enabled_total') }}",
+        cameraFailures: "{{ t('label_camera_consecutive_failures') }}",
+        cameraNone: "{{ t('empty_no_camera_attention') }}",
+        storageTitle: "{{ t('storage_monitor_title') }}",
+        storageUsage: "{{ t('label_storage_usage') }}",
+        storageVideo: "{{ t('label_video_usage') }}",
+        storageCost: "{{ t('label_storage_cost_estimate') }}",
+        storageExpiring: "{{ t('label_expiring_assets') }}",
+        storageLimit: "{{ t('label_storage_limit') }}",
+        storageThreshold: "{{ t('label_storage_threshold') }}",
+        systemHealthTitle: "{{ t('system_health_title') }}",
+        systemCpu: "{{ t('label_system_cpu') }}",
+        systemMemory: "{{ t('label_system_memory') }}",
+        systemDisk: "{{ t('label_system_disk') }}",
+        systemDbConnections: "{{ t('label_system_db_connections') }}",
+        systemQueue: "{{ t('label_system_queue_backlog') }}",
+        systemCompanyQueue: "{{ t('label_system_company_queue') }}",
+        systemStorage: "{{ t('label_system_storage_rate') }}",
+        systemWarning: "{{ t('system_health_warning_title') }}",
+        gpuTitle: "{{ t('gpu_monitor_title') }}",
+        gpuCopy: "{{ t('gpu_monitor_copy') }}",
+        gpuUnavailable: "{{ t('gpu_monitor_unavailable') }}",
+        gpuLatest: "{{ t('gpu_monitor_latest') }}",
+        gpuRecent: "{{ t('gpu_monitor_recent_60m') }}",
+        gpuDaily: "{{ t('gpu_monitor_last_24h') }}",
+        gpuProcurement: "{{ t('gpu_monitor_procurement') }}",
+        gpuUtilization: "{{ t('gpu_monitor_utilization') }}",
+        gpuMemory: "{{ t('gpu_monitor_memory') }}",
+        gpuTemperature: "{{ t('gpu_monitor_temperature') }}",
+        gpuPower: "{{ t('gpu_monitor_power') }}",
+        gpuAvg: "{{ t('gpu_monitor_avg') }}",
+        gpuMax: "{{ t('gpu_monitor_max') }}",
+        gpuSaturation: "{{ t('gpu_monitor_saturation') }}",
+        gpuMemoryPressure: "{{ t('gpu_monitor_memory_pressure') }}",
+        gpuEnergy: "{{ t('gpu_monitor_energy') }}",
+        gpuSampling: "{{ t('gpu_monitor_sampling') }}",
+        gpuLevelHealthy: "{{ t('gpu_monitor_level_healthy') }}",
+        gpuLevelWatch: "{{ t('gpu_monitor_level_watch') }}",
+        gpuLevelPressure: "{{ t('gpu_monitor_level_pressure') }}",
+        gpuLevelStale: "{{ t('gpu_monitor_level_stale') }}",
+        gpuSignalGpuSaturation: "{{ t('gpu_monitor_signal_gpu_saturation') }}",
+        gpuSignalGpuUtilization: "{{ t('gpu_monitor_signal_gpu_utilization') }}",
+        gpuSignalVramPressure: "{{ t('gpu_monitor_signal_vram_pressure') }}",
+        gpuSignalVramWatch: "{{ t('gpu_monitor_signal_vram_watch') }}",
+        gpuSignalThermalWatch: "{{ t('gpu_monitor_signal_thermal_watch') }}",
+        gpuSignalNotGpuBound: "{{ t('gpu_monitor_signal_not_gpu_bound') }}",
+        gpuSignalHealthyHeadroom: "{{ t('gpu_monitor_signal_healthy_headroom') }}",
+        gpuSignalCollectorStale: "{{ t('gpu_monitor_signal_collector_stale') }}",
+        taskIssueTitle: "{{ t('ai_task_issue_title') }}",
+        taskIssueDetails: "{{ t('ai_task_issue_details') }}",
+        taskIssueMediaFile: "{{ t('ai_task_issue_media_file') }}",
+        taskIssueDataReference: "{{ t('ai_task_issue_data_reference') }}",
+        taskIssueBackend: "{{ t('ai_task_issue_backend') }}",
+        taskIssueTimeout: "{{ t('ai_task_issue_timeout') }}",
+        taskIssueGeneric: "{{ t('ai_task_issue_generic') }}",
+    };
+    const csrfToken = "{{ csrf_token }}";
+    const initialPayload = {{ center_payload|tojson }};
+    let currentPayload = initialPayload;
+    let activeFilter = "all";
+
+    const escapeHtml = (value) => String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const summarizeTaskError = (rawError) => {
+        const text = String(rawError || "").trim();
+        if (!text) {
+            return null;
+        }
+        const lower = text.toLowerCase();
+        let message = labels.taskIssueGeneric;
+        if (lower.includes("moov atom") || lower.includes("ffmpeg") || lower.includes("invalid data found") || lower.includes("cannot identify image file")) {
+            message = labels.taskIssueMediaFile;
+        } else if (lower.includes("foreignkeyviolation") || lower.includes("foreign key") || lower.includes("not found")) {
+            message = labels.taskIssueDataReference;
+        } else if (lower.includes("ollama") || lower.includes("connection") || lower.includes("backend") || lower.includes("503") || lower.includes("502")) {
+            message = labels.taskIssueBackend;
+        } else if (lower.includes("timeout") || lower.includes("timed out")) {
+            message = labels.taskIssueTimeout;
+        }
+        const firstLine = text.split(/\r?\n/).find((line) => line.trim()) || text;
+        return {
+            message,
+            short: firstLine.length > 190 ? `${firstLine.slice(0, 187)}...` : firstLine,
+            details: text,
+        };
+    };
+
+    const renderSummary = (summary) => {
+        const statusCounts = summary.status_counts || {};
+        summaryRoot.innerHTML = `
+            <article class="ai-center-stat">
+                <div class="muted small">${labels.total}</div>
+                <div class="ai-center-stat-value">${summary.total_tasks || 0}</div>
+            </article>
+            <article class="ai-center-stat">
+                <div class="muted small">${labels.completed}</div>
+                <div class="ai-center-stat-value">${summary.completed_tasks || 0}</div>
+            </article>
+            <article class="ai-center-stat">
+                <div class="muted small">${labels.queued}</div>
+                <div class="ai-center-stat-value">${summary.queued_tasks || 0}</div>
+            </article>
+            <article class="ai-center-stat">
+                <div class="muted small">${labels.running}</div>
+                <div class="ai-center-stat-value">${summary.running_tasks || 0}</div>
+            </article>
+            <article class="ai-center-stat">
+                <div class="muted small">${labels.failed}</div>
+                <div class="ai-center-stat-value">${statusCounts.failed || 0}</div>
+            </article>
+            <article class="ai-center-stat">
+                <div class="muted small">${labels.deadLetter}</div>
+                <div class="ai-center-stat-value">${statusCounts.dead_letter || summary.dead_letter_tasks || 0}</div>
+            </article>
+        `;
+    };
+
+    const renderSystemHealth = (systemHealth) => {
+        const summary = systemHealth || {};
+        if (summary.cpu_percent === undefined) {
+            systemHealthRoot.innerHTML = "";
+            return;
+        }
+        const warningMarkup = Array.isArray(summary.warning_messages) && summary.warning_messages.length
+            ? `<div class="muted"><strong>${labels.systemWarning}:</strong> ${summary.warning_messages.map((item) => escapeHtml(item)).join(" | ")}</div>`
+            : "";
+        systemHealthRoot.innerHTML = `
+            <article class="panel ${summary.warning ? "ai-center-storage-warning" : ""}">
+                <div class="panel-header">
+                    <h3>${labels.systemHealthTitle}</h3>
+                </div>
+                <div class="tag-row">
+                    <span class="tag">${labels.systemCpu}: ${escapeHtml(summary.cpu_percent)}%</span>
+                    <span class="tag">${labels.systemMemory}: ${escapeHtml(summary.memory_percent)}%</span>
+                    <span class="tag">${labels.systemDisk}: ${escapeHtml(summary.disk_used_percent)}%</span>
+                    <span class="tag">${labels.systemDbConnections}: ${escapeHtml(summary.postgres_connection_count ?? "-")}</span>
+                    <span class="tag">${labels.systemQueue}: ${escapeHtml(summary.global_queue_active_jobs || 0)}</span>
+                    <span class="tag">${labels.systemCompanyQueue}: ${escapeHtml(summary.company_queue_active_jobs || 0)}</span>
+                    <span class="tag">${labels.systemStorage}: ${escapeHtml(summary.storage_usage_rate_percent || 0)}%</span>
+                </div>
+                ${warningMarkup}
+            </article>
+        `;
+    };
+
+    const signalLabel = (kind) => ({
+        gpu_saturation: labels.gpuSignalGpuSaturation,
+        gpu_utilization: labels.gpuSignalGpuUtilization,
+        vram_pressure: labels.gpuSignalVramPressure,
+        vram_watch: labels.gpuSignalVramWatch,
+        thermal_watch: labels.gpuSignalThermalWatch,
+        not_gpu_bound: labels.gpuSignalNotGpuBound,
+        healthy_headroom: labels.gpuSignalHealthyHeadroom,
+        collector_stale: labels.gpuSignalCollectorStale,
+    }[kind] || kind);
+
+    const levelLabel = (level) => ({
+        healthy: labels.gpuLevelHealthy,
+        watch: labels.gpuLevelWatch,
+        pressure: labels.gpuLevelPressure,
+        stale: labels.gpuLevelStale,
+    }[level] || level);
+
+    const renderGpuMonitor = (gpuMonitor) => {
+        const monitor = gpuMonitor || {};
+        if (!monitor.enabled) {
+            gpuMonitorRoot.innerHTML = "";
+            return;
+        }
+        if (!monitor.available) {
+            gpuMonitorRoot.innerHTML = `
+                <article class="panel gpu-monitor-level-stale">
+                    <div class="panel-header">
+                        <h3>${labels.gpuTitle}</h3>
+                    </div>
+                    <div class="muted">${labels.gpuUnavailable}</div>
+                </article>
+            `;
+            return;
+        }
+        const latest = Array.isArray(monitor.latest) ? monitor.latest : [];
+        const recent = monitor.recent_60m || {};
+        const daily = monitor.last_24h || {};
+        const procurement = monitor.procurement || {};
+        const level = procurement.level || "healthy";
+        const points = Array.isArray(recent.chart_points) ? recent.chart_points : [];
+        const latestTags = latest.map((gpu) => `
+            <span class="tag">
+                ${escapeHtml(gpu.gpu_name)}:
+                ${labels.gpuUtilization} ${escapeHtml(gpu.utilization_gpu_percent ?? "-")}%
+                / ${labels.gpuMemory} ${escapeHtml(gpu.utilization_memory_percent ?? "-")}%
+                / ${labels.gpuPower} ${escapeHtml(gpu.power_draw_w ?? "-")}W
+            </span>
+        `).join("");
+        const bars = points.length
+            ? points.map((point) => `<span class="gpu-monitor-bar" title="${escapeHtml(point.sampled_at)} ${escapeHtml(point.gpu)}%" style="height:${Math.max(4, Number(point.gpu || 0) * 0.72)}px"></span>`).join("")
+            : `<span class="muted small">${labels.gpuUnavailable}</span>`;
+        const signals = Array.isArray(procurement.signals) && procurement.signals.length
+            ? procurement.signals.map((signal) => `<span class="tag">${escapeHtml(signalLabel(signal.kind))}: ${escapeHtml(signal.value)}</span>`).join("")
+            : "";
+        gpuMonitorRoot.innerHTML = `
+            <article class="panel gpu-monitor-level-${escapeHtml(level)}">
+                <div class="panel-header">
+                    <div>
+                        <h3>${labels.gpuTitle}</h3>
+                        <div class="muted small">${labels.gpuCopy}</div>
+                    </div>
+                    <span class="tag">${labels.gpuProcurement}: ${escapeHtml(levelLabel(level))}</span>
+                </div>
+                <div class="gpu-monitor-grid">
+                    <div>
+                        <div class="tag-row">
+                            ${latestTags}
+                            <span class="tag">${labels.gpuSampling}: ${escapeHtml(monitor.sample_interval_seconds)}s / ${escapeHtml(monitor.flush_interval_seconds)}s</span>
+                        </div>
+                        <div class="gpu-monitor-bars" aria-label="${escapeHtml(labels.gpuRecent)}">${bars}</div>
+                    </div>
+                    <div class="tag-row">
+                        <span class="tag">${labels.gpuRecent} ${labels.gpuAvg}: ${escapeHtml(recent.avg_gpu_utilization_percent ?? "-")}%</span>
+                        <span class="tag">${labels.gpuRecent} ${labels.gpuMax}: ${escapeHtml(recent.max_gpu_utilization_percent ?? "-")}%</span>
+                        <span class="tag">${labels.gpuSaturation}: ${escapeHtml(recent.saturated_sample_ratio_percent ?? 0)}%</span>
+                        <span class="tag">${labels.gpuMemoryPressure}: ${escapeHtml(daily.memory_pressure_sample_ratio_percent ?? recent.memory_pressure_sample_ratio_percent ?? 0)}%</span>
+                        <span class="tag">${labels.gpuDaily} ${labels.gpuAvg}: ${escapeHtml(daily.avg_gpu_utilization_percent ?? "-")}%</span>
+                        <span class="tag">${labels.gpuEnergy}: ${escapeHtml(daily.estimated_energy_kwh ?? "-")} kWh / $${escapeHtml(daily.estimated_energy_cost ?? "-")}</span>
+                        ${signals}
+                    </div>
+                </div>
+            </article>
+        `;
+    };
+
+    const renderStorageMonitor = (storageMonitor) => {
+        const summary = storageMonitor || {};
+        if (!summary.total_media_label) {
+            storageMonitorRoot.innerHTML = "";
+            return;
+        }
+        const warningBanner = summary.warning_message
+            ? `<article class="panel ai-center-storage-warning"><strong>${escapeHtml(summary.warning_message)}</strong></article>`
+            : "";
+        storageMonitorRoot.innerHTML = `
+            ${warningBanner}
+            <article class="panel">
+                <div class="panel-header">
+                    <h3>${labels.storageTitle}</h3>
+                </div>
+                <div class="tag-row">
+                    <span class="tag">${labels.storageUsage}: ${escapeHtml(summary.total_media_label)}</span>
+                    <span class="tag">${labels.storageVideo}: ${escapeHtml(summary.total_video_label)}</span>
+                    <span class="tag">${labels.storageCost}: ${escapeHtml(summary.estimated_next_month_cost_label)}</span>
+                    <span class="tag">${labels.storageExpiring}: ${escapeHtml(summary.expiring_soon_count || 0)}</span>
+                    <span class="tag">${labels.storageLimit}: ${escapeHtml(summary.storage_limit_label || "-")}</span>
+                    <span class="tag">${labels.storageThreshold}: ${escapeHtml(summary.usage_rate_percent || 0)}%</span>
+                </div>
+            </article>
+        `;
+    };
+
+    const renderCameraHealth = (cameraHealth) => {
+        const summary = cameraHealth || {};
+        const items = Array.isArray(summary.items) ? summary.items : [];
+        if (!summary.total_cameras) {
+            cameraHealthRoot.innerHTML = "";
+            return;
+        }
+        const attentionMarkup = items.length
+            ? items.map((item) => `
+                <article class="panel">
+                    <div><strong>${escapeHtml(item.name)}</strong></div>
+                    <div class="tag-row">
+                        <span class="tag">${escapeHtml(item.status)}</span>
+                        <span class="tag">${labels.cameraFailures}: ${escapeHtml(item.consecutive_failures)}</span>
+                    </div>
+                    <div class="muted small">${escapeHtml(item.error_log || "")}</div>
+                </article>
+            `).join("")
+            : `<article class="panel empty">${labels.cameraNone}</article>`;
+        cameraHealthRoot.innerHTML = `
+            <article class="panel">
+                <div class="panel-header">
+                    <h3>${labels.cameraHealthTitle}</h3>
+                </div>
+                <div class="tag-row">
+                    <span class="tag">${labels.cameraEnabled}: ${escapeHtml(summary.enabled_cameras || 0)}/${escapeHtml(summary.total_cameras || 0)}</span>
+                    <span class="tag">${labels.cameraOnline}: ${escapeHtml(summary.online_cameras || 0)}</span>
+                    <span class="tag">${labels.cameraOffline}: ${escapeHtml(summary.offline_cameras || 0)}</span>
+                    <span class="tag">${labels.cameraError}: ${escapeHtml(summary.error_cameras || 0)}</span>
+                    <span class="tag">${labels.cameraAttention}: ${escapeHtml(summary.attention_count || 0)}</span>
+                </div>
+            </article>
+            ${attentionMarkup}
+        `;
+    };
+
+    const renderFilters = (items) => {
+        const photoCount = items.filter((item) => item.task_category === "photo").length;
+        const reportCount = items.filter((item) => item.task_category === "report").length;
+        const cameraCount = items.filter((item) => item.task_category === "camera").length;
+        const copilotCount = items.filter((item) => item.task_category === "copilot").length;
+        const annotationCount = items.filter((item) => item.task_category === "annotation").length;
+        const deadLetterCount = items.filter((item) => item.status === "dead_letter").length;
+        const definitions = [
+            { id: "all", label: `${labels.allFilter} (${items.length})` },
+            { id: "dead_letter", label: `${labels.deadLetterFilter} (${deadLetterCount})` },
+            { id: "photo", label: `${labels.photoFilter} (${photoCount})` },
+            { id: "report", label: `${labels.reportFilter} (${reportCount})` },
+            { id: "camera", label: `${labels.cameraFilter} (${cameraCount})` },
+            { id: "copilot", label: `${labels.copilotFilter} (${copilotCount})` },
+            { id: "annotation", label: `${labels.annotationFilter} (${annotationCount})` },
+        ];
+        filtersRoot.innerHTML = definitions.map((definition) => `
+            <button
+                type="button"
+                class="ai-center-filter ${activeFilter === definition.id ? "ai-center-filter-active" : ""}"
+                data-ai-center-filter="${escapeHtml(definition.id)}"
+            >${escapeHtml(definition.label)}</button>
+        `).join("");
+    };
+
+    const renderTasks = (items) => {
+        const normalizedItems = Array.isArray(items) ? items : [];
+        const visibleItems = normalizedItems.filter((item) => {
+            if (activeFilter === "photo") {
+                return item.task_category === "photo";
+            }
+            if (activeFilter === "report") {
+                return item.task_category === "report";
+            }
+            if (activeFilter === "camera") {
+                return item.task_category === "camera";
+            }
+            if (activeFilter === "copilot") {
+                return item.task_category === "copilot";
+            }
+            if (activeFilter === "annotation") {
+                return item.task_category === "annotation";
+            }
+            if (activeFilter === "dead_letter") {
+                return item.status === "dead_letter";
+            }
+            return true;
+        });
+        if (!visibleItems.length) {
+            listRoot.innerHTML = `<article class="panel empty">${labels.empty}</article>`;
+            return;
+        }
+        listRoot.innerHTML = visibleItems.map((item) => {
+            const errorInfo = summarizeTaskError(item.last_error);
+            return `
+            <article class="ai-center-task ${item.camera_attention ? "ai-center-task-attention" : ""}">
+                <div class="ai-center-task-header">
+                    <div class="ai-center-task-meta">
+                        <div><strong>${escapeHtml(item.task_type_label)}</strong></div>
+                        <div class="muted small">${escapeHtml(item.related_title)}</div>
+                        <div class="tag-row">
+                            <span class="tag">${escapeHtml(item.status_label)}</span>
+                            <span class="tag">${labels.attempts}: ${escapeHtml(item.attempt_count)}/${escapeHtml(item.max_attempts)}</span>
+                            ${item.source_label ? `<span class="tag">${escapeHtml(item.source_label)}</span>` : ""}
+                            ${item.camera_status_label ? `<span class="tag">${escapeHtml(item.camera_status_label)}</span>` : ""}
+                        </div>
+                    </div>
+                    <div class="ai-center-task-actions">
+                        <a class="btn btn-secondary" href="${escapeHtml(item.related_url)}">${labels.openRelated}</a>
+                        ${item.can_retry ? `
+                            <form method="post" action="/portal/ai-center/tasks/${encodeURIComponent(item.task_id)}/retry">
+                                <input type="hidden" name="csrf_token" value="${escapeHtml(csrfToken)}">
+                                <button class="btn btn-primary" type="submit" title="${escapeHtml(labels.retryTaskHint)}">${labels.retryTask}</button>
+                            </form>
+                        ` : ""}
+                    </div>
+                </div>
+                <div class="muted small">${labels.progress}: ${escapeHtml(item.progress_percent)}%</div>
+                <div class="ai-center-progress"><span style="width:${escapeHtml(item.progress_percent)}%"></span></div>
+                <div class="ai-center-task-footer">
+                    <div class="muted small">${labels.eta}: ${escapeHtml(item.eta_label)}</div>
+                    <div class="muted small">${escapeHtml(item.created_at)}</div>
+                </div>
+                ${errorInfo ? `
+                    <div class="ai-center-task-error small">
+                        <strong>${escapeHtml(labels.taskIssueTitle)}</strong>
+                        <div>${escapeHtml(errorInfo.message)}</div>
+                        <div class="muted small">${escapeHtml(errorInfo.short)}</div>
+                        <details>
+                            <summary>${escapeHtml(labels.taskIssueDetails)}</summary>
+                            <pre>${escapeHtml(errorInfo.details)}</pre>
+                        </details>
+                    </div>
+                ` : ""}
+            </article>
+        `}).join("");
+    };
+
+    const renderPayload = (payload) => {
+        currentPayload = payload;
+        renderSummary(payload.summary || {});
+        renderSystemHealth(payload.system_health || {});
+        renderGpuMonitor(payload.gpu_monitor || {});
+        renderStorageMonitor(payload.storage_monitor || {});
+        renderCameraHealth(payload.camera_health || {});
+        renderFilters(payload.items || []);
+        renderTasks(payload.items || []);
+        updatedAt.textContent = labels.updatedAt.replace("__VALUE__", payload.updated_at || "");
+    };
+
+    filtersRoot.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        const nextFilter = target.dataset.aiCenterFilter;
+        if (!nextFilter || nextFilter === activeFilter) {
+            return;
+        }
+        activeFilter = nextFilter;
+        renderPayload(currentPayload);
+    });
+
+    const poll = async () => {
+        try {
+            const response = await fetch("/portal/ai-center/data", {
+                headers: { "Accept": "application/json" },
+                credentials: "same-origin",
+                cache: "no-store",
+            });
+            if (!response.ok) {
+                return;
+            }
+            renderPayload(await response.json());
+        } catch (error) {
+            console.warn("ai_center_poll_failed", error);
+        }
+    };
+
+    renderPayload(initialPayload);
+    window.setInterval(poll, 5000);
+})();
+</script>
+{% endblock %}

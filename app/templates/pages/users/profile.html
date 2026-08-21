@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>{{ t("profile_title") }}</h2>
+    </div>
+    <div class="photo-meta">
+        <div><strong>{{ current_user.display_name }}</strong></div>
+        <div>{{ t("meta_username", value=current_user.username) }}</div>
+        <div>{{ t("meta_role", value=t("role_" ~ current_user.role.value)) }}</div>
+        <div>{{ t("meta_email", value=current_user.email or t("meta_none")) }}</div>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>{{ t("profile_change_password") }}</h2>
+    </div>
+    <form method="post" action="/portal/user/change-password" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>{{ t("field_current_password") }}
+            <input type="password" name="current_password" required>
+        </label>
+        <label>{{ t("field_new_password") }}
+            <input type="password" name="new_password" required>
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_update_password") }}</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

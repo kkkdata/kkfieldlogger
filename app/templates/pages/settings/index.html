@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>{{ t("settings_title") }}</h2>
+    </div>
+    <form method="post" action="/portal/settings" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>{{ t("field_system_title") }}
+            <input type="text" name="system_title" value="{{ form_settings['system_title'] }}" required>
+        </label>
+        <label>{{ t("field_portal_title") }}
+            <input type="text" name="portal_title" value="{{ form_settings['portal_title'] }}" required>
+        </label>
+        <label>{{ t("field_company_name") }}
+            <input type="text" name="company_name" value="{{ form_settings['company_name'] }}" required>
+        </label>
+        <label>{{ t("field_timezone") }}
+            <input type="text" name="timezone" value="{{ form_settings['timezone'] }}" required>
+        </label>
+        <label>{{ t("field_logo_path") }}
+            <input type="text" name="logo_path" value="{{ form_settings['logo_path'] }}" required>
+        </label>
+        <label>{{ t("field_storage_base_url") }}
+            <input type="text" name="storage_base_url" value="{{ form_settings['storage_base_url'] }}">
+        </label>
+        <label>{{ t("field_upload_limit_mb") }}
+            <input type="number" name="upload_limit_mb" value="{{ form_settings['upload_limit_mb'] }}" required>
+        </label>
+        <label>{{ t("field_default_visibility") }}
+            <select name="default_visibility">
+                <option value="internal" {% if form_settings['default_visibility'] == 'internal' %}selected{% endif %}>{{ t("status_internal") }}</option>
+                <option value="client_visible" {% if form_settings['default_visibility'] == 'client_visible' %}selected{% endif %}>{{ t("status_client_visible") }}</option>
+            </select>
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_save_settings") }}</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+

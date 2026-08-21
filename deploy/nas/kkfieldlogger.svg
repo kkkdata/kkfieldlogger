@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33404F"/>
+      <stop offset="1" stop-color="#232C38"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#bg)"/>
+  <!-- camera body -->
+  <rect x="46" y="86" width="164" height="112" rx="18" fill="#F4F1EB"/>
+  <!-- viewfinder hump -->
+  <path d="M96 86 L104 66 A10 10 0 0 1 113 60 H143 A10 10 0 0 1 152 66 L160 86 Z" fill="#F4F1EB"/>
+  <!-- lens -->
+  <circle cx="128" cy="142" r="40" fill="#33404F"/>
+  <circle cx="128" cy="142" r="26" fill="#D95F27"/>
+  <circle cx="118" cy="132" r="8" fill="#F4F1EB" opacity="0.85"/>
+  <!-- GPS pin badge -->
+  <path d="M196 96 c-12 0 -21 9 -21 21 c0 15 21 33 21 33 s21 -18 21 -33 c0 -12 -9 -21 -21 -21 Z" fill="#D95F27"/>
+  <circle cx="196" cy="117" r="8" fill="#F4F1EB"/>
+</svg>

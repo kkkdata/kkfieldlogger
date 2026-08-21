@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-stack">
+<section class="panel hero-panel">
+    <div class="hero-copy">
+        <div class="section-eyebrow">{{ t("page_ai_backends") }}</div>
+        <h2>{{ t("ai_backends_title") }}</h2>
+        <div class="section-subtitle">{{ t("ai_backends_workspace_copy") }}</div>
+    </div>
+</section>
+
+<section class="split-shell">
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("ai_global_settings_title") }}</div>
+                <h3>{{ t("ai_global_settings_title") }}</h3>
+            </div>
+        </div>
+        <form method="post" action="/portal/ai-backends/settings" class="form-grid form-shell">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>{{ t("field_ai_max_concurrent_requests") }}
+                <input
+                    type="number"
+                    name="ai_max_concurrent_requests"
+                    min="{{ ai_max_concurrent_requests_min }}"
+                    max="{{ ai_max_concurrent_requests_max }}"
+                    step="1"
+                    value="{{ ai_max_concurrent_requests }}"
+                    required
+                >
+            </label>
+            <div class="muted">{{ t("ai_max_concurrent_requests_help") }}</div>
+            <label>
+                <input type="checkbox" name="ai_enable_dynamic_fallback" {% if ai_enable_dynamic_fallback %}checked{% endif %}>
+                {{ t("field_ai_enable_dynamic_fallback") }}
+            </label>
+            <div class="muted">{{ t("ai_dynamic_fallback_help") }}</div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ t("btn_save_settings") }}</button>
+            </div>
+        </form>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="section-eyebrow">{{ t("storage_monitor_title") }}</div>
+                <h3>{{ t("storage_monitor_title") }}</h3>
+            </div>
+        </div>
+        <div class="tag-row">
+            <span class="tag">{{ t("label_storage_usage") }}: {{ storage_monitor.total_media_label }}</span>
+            <span class="tag">{{ t("label_video_usage") }}: {{ storage_monitor.total_video_label }}</span>
+            <span class="tag">{{ t("label_storage_cost_estimate") }}: {{ storage_monitor.estimated_next_month_cost_label }}</span>
+            <span class="tag">{{ t("label_expiring_assets") }}: {{ storage_monitor.expiring_soon_count }}</span>
+            <span class="tag">{{ t("label_storage_limit") }}: {{ storage_monitor.storage_limit_label or "-" }}</span>
+            <span class="tag">{{ t("label_storage_threshold") }}: {{ storage_monitor.usage_rate_percent }}%</span>
+        </div>
+        {% if storage_monitor.warning_message %}
+        <div class="muted" style="margin-top:0.75rem;"><strong>{{ storage_monitor.warning_message }}</strong></div>
+        {% else %}
+        <div class="muted" style="margin-top:0.75rem;">
+            {{ t("storage_monitor_cost_copy", cost=storage_monitor.cost_per_gb_month_label, retention=storage_monitor.video_retention_days, hot_days=storage_monitor.hot_storage_days) }}
+        </div>
+        {% endif %}
+        <div class="soft-divider" style="margin:16px 0;"></div>
+        <div class="section-eyebrow">{{ t("system_health_title") }}</div>
+        <h3 style="margin-top:0.35rem;">{{ t("system_health_title") }}</h3>
+        <div class="tag-row">
+            <span class="tag">{{ t("label_system_cpu") }}: {{ system_health.cpu_percent }}%</span>
+            <span class="tag">{{ t("label_system_memory") }}: {{ system_health.memory_percent }}%</span>
+            <span class="tag">{{ t("label_system_disk") }}: {{ system_health.disk_used_percent }}%</span>
+            <span class="tag">{{ t("label_system_db_connections") }}: {{ system_health.postgres_connection_count or "-" }}</span>
+            <span class="tag">{{ t("label_system_queue_backlog") }}: {{ system_health.global_queue_active_jobs }}</span>
+            <span class="tag">{{ t("label_system_company_queue") }}: {{ system_health.company_queue_active_jobs }}</span>
+            <span class="tag">{{ t("label_system_storage_rate") }}: {{ system_health.storage_usage_rate_percent }}%</span>
+        </div>
+        {% if system_health.warning_messages %}
+        <div class="muted" style="margin-top:0.75rem;"><strong>{{ t("system_health_warning_title") }}:</strong> {{ system_health.warning_messages|join(" | ") }}</div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <div class="section-eyebrow">{{ t("ai_backends_new") }}</div>
+            <h3>{{ t("ai_backends_new") }}</h3>
+        </div>
+    </div>
+    <form method="post" action="/portal/ai-backends" class="form-grid form-shell">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>{{ t("field_backend_id") }}
+            <input type="text" name="backend_id" required>
+        </label>
+        <label>{{ t("field_backend_type") }}
+            <select name="backend_type">
+                {% for backend_type in backend_types %}
+                <option value="{{ backend_type }}">{{ backend_type }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>{{ t("field_backend_url") }}
+            <input type="url" name="url" required>
+        </label>
+        <label>{{ t("field_backend_model") }}
+            <input type="text" name="model" required>
+        </label>
+        <label>{{ t("field_backend_api_key") }}
+            <input type="password" name="api_key">
+        </label>
+        <label>{{ t("field_backend_weight") }}
+            <input type="number" name="weight" min="1" value="1" required>
+        </label>
+        <label>
+            <input type="checkbox" name="enabled" checked> {{ t("field_backend_enabled") }}
+        </label>
+        <label>{{ t("ai_backends_test_prompt") }}
+            <textarea name="custom_prompt" rows="2"></textarea>
+        </label>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ t("btn_create") }}</button>
+            <button type="submit" class="btn btn-secondary" formaction="/portal/ai-backends/test" formmethod="post">{{ t("btn_test_connection") }}</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <div class="section-eyebrow">{{ t("ai_backends_saved") }}</div>
+            <h3>{{ t("ai_backends_saved") }}</h3>
+        </div>
+    </div>
+    <div class="card-grid">
+        {% for backend in tenant_backends %}
+        <article class="panel">
+            <form method="post" action="/portal/ai-backends/{{ backend.id }}/update" class="form-stack">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="existing_backend_id" value="{{ backend.id }}">
+                <label>{{ t("field_backend_id") }}
+                    <input type="text" name="backend_id" value="{{ backend.id }}" required>
+                </label>
+                <label>{{ t("field_backend_type") }}
+                    <select name="backend_type">
+                        {% for backend_type in backend_types %}
+                        <option value="{{ backend_type }}" {% if backend.type == backend_type %}selected{% endif %}>{{ backend_type }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>{{ t("field_backend_url") }}
+                    <input type="url" name="url" value="{{ backend.url }}" required>
+                </label>
+                <label>{{ t("field_backend_model") }}
+                    <input type="text" name="model" value="{{ backend.model }}" required>
+                </label>
+                <label>{{ t("field_backend_api_key") }}
+                    <input type="password" name="api_key" placeholder="{{ t('ai_backends_api_key_hint') }}">
+                </label>
+                <label>{{ t("field_backend_weight") }}
+                    <input type="number" name="weight" min="1" value="{{ backend.weight }}" required>
+                </label>
+                <label>
+                    <input type="checkbox" name="enabled" {% if backend.enabled %}checked{% endif %}> {{ t("field_backend_enabled") }}
+                </label>
+                <label>{{ t("ai_backends_test_prompt") }}
+                    <textarea name="custom_prompt" rows="2"></textarea>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ t("btn_update") }}</button>
+                    <button type="submit" class="btn btn-secondary" formaction="/portal/ai-backends/test" formmethod="post">{{ t("btn_test_connection") }}</button>
+                </div>
+            </form>
+            <form method="post" action="/portal/ai-backends/{{ backend.id }}/delete" class="form-stack">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-danger full-width">{{ t("btn_delete_backend") }}</button>
+            </form>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_ai_backends") }}</article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <div class="section-eyebrow">{{ t("ai_backends_system_fallback") }}</div>
+            <h3>{{ t("ai_backends_system_fallback") }}</h3>
+        </div>
+    </div>
+    <div class="card-grid">
+        {% for backend in system_backends %}
+        <article class="panel">
+            <div class="tag-row">
+                <span class="tag">{{ backend.id }}</span>
+                <span class="tag">{{ backend.type }}</span>
+                <span class="tag">{{ backend.model }}</span>
+                <span class="tag">{{ backend.weight }}</span>
+            </div>
+            <div class="photo-meta">
+                <div><strong>{{ t("field_backend_url") }}:</strong> {{ backend.url }}</div>
+                <div><strong>{{ t("field_backend_enabled") }}:</strong> {{ backend.enabled }}</div>
+            </div>
+        </article>
+        {% else %}
+        <article class="panel empty">{{ t("empty_no_ai_backends") }}</article>
+        {% endfor %}
+    </div>
+</section>
+</div>
+{% endblock %}
