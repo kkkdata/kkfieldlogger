@@ -23,7 +23,7 @@ RUN apt-get update \
 COPY pyproject.toml README.md ./
 COPY app ./app
 
-RUN pip install --no-cache-dir --upgrade pip \
+RUN pip install --no-cache-dir --upgrade "pip>=26.1.2" \
     && if [ "$INSTALL_AI" = "true" ]; then \
         pip install --no-cache-dir --prefix=/install ".[ai]"; \
     else \
@@ -39,6 +39,7 @@ ARG APP_UID=1000
 ARG APP_GID=1000
 
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
         libpq5 \
         postgresql-client \
@@ -60,6 +61,12 @@ COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /ffprobe /usr/local/bin/
 WORKDIR /app
 
 COPY --from=builder /install /usr/local
+
+# Upgrade setuptools AFTER the builder copy, then remove pip from the
+# runtime image entirely: nothing installs packages at runtime, and pip
+# (even the latest) vendors setuptools 70.3.0 / msgpack 1.1.2 copies that
+# scanners flag. Build-stage pip stays >=26.1.2.
+RUN pip install --no-cache-dir --upgrade "setuptools>=78.1.1"     && python -m pip uninstall -y pip
 
 COPY pyproject.toml README.md alembic.ini ./
 COPY alembic ./alembic

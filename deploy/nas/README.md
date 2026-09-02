@@ -19,8 +19,8 @@ review rules: `docs/nas/tos7-packaging-plan.md`; work plan:
 # slim image (NAS default): no in-image AI, vision AI stays on external
 # backends; voice transcription and video keyframes disabled gracefully
 docker build -f docker/Dockerfile --build-arg INSTALL_AI=false \
-  -t kkkdata/kkfieldlogger:0.9.0-beta.2 .
-docker push kkkdata/kkfieldlogger:0.9.0-beta.2
+  -t kkkdata/kkfieldlogger:1.0.000 .
+docker push kkkdata/kkfieldlogger:1.0.000
 ```
 
 Measured 2026-08-19 (static ffmpeg): slim 866MB, full (INSTALL_AI=true, production) 1.68GB.

@@ -5,9 +5,11 @@
 
 Crews shoot from their phones; every upload carries the project, employee,
 GPS, and time. Managers review, annotate, approve, and build reports.
-Runs entirely on your own server or NAS — evidence stays on your drives.
+Runs entirely on your own server or NAS; data stays on your drives by
+default. Optional AI features are off until you connect an AI backend of
+your choice, and photos are then sent only to that backend.
 
-> **Status: free beta (0.9.x).** Built and battle-tested on our own
+> **Status: 1.0, free to use.** Built and battle-tested on our own
 > data-center construction projects in the US. Feedback:
 > Michelle@kkdatasvc.com
 

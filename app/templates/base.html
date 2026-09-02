@@ -41,9 +41,7 @@
                 {% if app_settings.app_version != 'dev' %}
                 <div class="muted small">
                     v{{ app_settings.app_version }}
-                    {% if 'beta' in app_settings.app_version %}
-                    · <a href="mailto:Michelle@kkdatasvc.com?subject=KK%20Field%20Logger%20beta%20feedback">{{ t("label_beta_feedback") }}</a>
-                    {% endif %}
+                    · <a href="mailto:Michelle@kkdatasvc.com?subject=KK%20Field%20Logger%20feedback">{{ t("label_beta_feedback") }}</a>
                 </div>
                 {% endif %}
                 <form method="post" action="/portal/language" class="form-stack">

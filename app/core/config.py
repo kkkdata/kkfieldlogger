@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,6 +26,11 @@ class Settings(BaseSettings):
         default="sqlite:///./kk_field_logger.db",
         validation_alias=AliasChoices("database_url", "KK_DATABASE_URL", "DATABASE_URL"),
     )
+    # When set and the file exists, its contents replace the password in
+    # database_url. NAS installs generate a random per-install password on
+    # the shared config volume (see deploy/nas/docker-compose.yml) instead
+    # of shipping a fixed credential.
+    database_password_file: str | None = None
     media_root: str = "/mnt/movies/kkdata"
     media_url_prefix: str = "/media"
     public_base_url: str = "http://localhost"
@@ -141,6 +147,27 @@ class Settings(BaseSettings):
         return self.deployment_profile.strip().lower() == "private"
 
     def model_post_init(self, __context) -> None:
+        # NAS installs keep the database password in a file generated at
+        # install time; splice it into the URL so no credential is fixed in
+        # the compose file or container environment.
+        if self.database_password_file:
+            pw_path = Path(self.database_password_file)
+            try:
+                if pw_path.exists():
+                    password = pw_path.read_text(encoding="utf-8").strip()
+                    if password:
+                        from urllib.parse import quote as _quote
+
+                        parsed = urlsplit(self.database_url)
+                        if parsed.hostname:
+                            auth = parsed.username or ""
+                            netloc = f"{auth}:{_quote(password, safe='')}@{parsed.hostname}"
+                            if parsed.port:
+                                netloc += f":{parsed.port}"
+                            self.database_url = urlunsplit(parsed._replace(netloc=netloc))
+            except OSError:
+                pass
+
         # Private/NAS deployments have no operator to set a strong secret;
         # generate one on first boot and persist it on the config volume.
         if self.session_secret in {"", "change-me"} and self.session_secret_file:

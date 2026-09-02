@@ -60,8 +60,28 @@
             </section>
 
             <section class="plain-card public-card">
-                <h2><span class="lang-zh">访问与保留</span><span class="lang-en">Access and retention</span></h2>
-                <p><span class="lang-zh">访问按公司工作区、角色、项目和审核设置控制。因业务、账务、法律、安全或审计要求，部分记录可能需要保留。</span><span class="lang-en">Access is controlled by company workspace, role, project, and review settings. Some records may be retained for business, billing, legal, safety, audit, or security obligations.</span></p>
+                <h2><span class="lang-zh">保留期限</span><span class="lang-en">Retention periods</span></h2>
+                <p><span class="lang-zh">照片、视频等项目媒体本体在工作区存续期间保留，永不自动删除；只有被移入回收站的记录会在 30 天后自动清除（自建部署默认值，可配置）。被新结果取代的 AI 分析日志保留 180 天；审计日志保留 365 天；已完成的后台任务记录保留 30 天。工作区注销后，数据在确认期结束时删除，法律、账务或安全义务要求保留的记录除外。</span><span class="lang-en">Project media (photos, video, etc.) is kept for the life of the workspace and never auto-deleted; only records moved to the recycle bin are purged automatically after 30 days (the self-hosted default, configurable). Superseded AI analysis logs are kept 180 days, audit logs 365 days, and completed background-job records 30 days. When a workspace is closed, data is deleted at the end of the confirmation window, except records we must retain for legal, billing, or security obligations.</span></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">你的权利与行使路径</span><span class="lang-en">Your rights and how to exercise them</span></h2>
+                <p><span class="lang-zh">你可以请求访问、更正、导出或删除与你相关的记录。路径：①工作区内，联系你的公司管理员（后台的员工/用户管理页可直接更正和删除）；②账号删除，访问 <a href="/delete-account">账号删除页</a>提交请求；③其他请求或申诉，发邮件至 <a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>，我们在 30 天内回复。自建（NAS）部署中，你的公司即数据控制者，数据在其设备上，请求由其管理员直接处理。</span><span class="lang-en">You may request access to, correction of, export of, or deletion of records about you. Paths: (1) inside a workspace, contact your company admin — the portal's employee/user pages handle corrections and deletions directly; (2) for account deletion, use the <a href="/delete-account">account-deletion page</a>; (3) for anything else, email <a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a> — we respond within 30 days. In self-hosted (NAS) deployments your company is the data controller and the data sits on its own hardware; requests are handled by its admin.</span></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">安全措施</span><span class="lang-en">Security measures</span></h2>
+                <p><span class="lang-zh">传输采用 HTTPS 加密（托管服务强制）；访问按工作区、角色和项目隔离；登录有防暴力破解限速；敏感操作全部记入审计日志；应用容器以非 root 身份运行；自建部署在安装时随机生成数据库凭证与会话密钥，且升级前自动备份数据库。</span><span class="lang-en">Transport is encrypted with HTTPS (enforced on the hosted service); access is isolated by workspace, role, and project; sign-in is rate-limited against brute force; every sensitive action lands in an audit log; application containers run as a non-root user; self-hosted installs generate random database credentials and session secrets at install time and back up the database automatically before each upgrade.</span></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">AI 与第三方数据流向</span><span class="lang-en">AI and third-party data flow</span></h2>
+                <p><span class="lang-zh">AI 辅助功能（照片摘要、标签、语音转写）<strong>默认关闭</strong>，需要工作区管理员主动接入一个 AI 后端才会启用——可以是你自建的本地服务（如局域网内的 Ollama，数据不出内网），也可以是你选择的云端 API。启用后，仅照片/音频及必要的分析上下文会发送到<strong>你配置的那个后端</strong>；我们不会将数据发送给任何你未配置的第三方，不出售数据，不用于广告，也不用你的数据训练模型。除 AI 后端外，本服务不接入其他第三方数据处理方；自建部署中甚至不存在我们可触达的数据。</span><span class="lang-en">AI-assisted features (photo summaries, tags, voice transcription) are <strong>off by default</strong> and activate only after a workspace admin connects an AI backend — either a self-hosted local service (e.g. Ollama on your LAN, so data never leaves your network) or a cloud API of your choosing. When enabled, only the photo/audio and the minimum analysis context are sent, and only to <strong>the backend you configured</strong>. We never send data to any third party you did not configure, never sell data, never use it for advertising, and never train models on it. Beyond your chosen AI backend there are no third-party processors; in self-hosted deployments we have no access to your data at all.</span></p>
+            </section>
+
+            <section class="plain-card public-card">
+                <h2><span class="lang-zh">访问控制</span><span class="lang-en">Access control</span></h2>
+                <p><span class="lang-zh">访问按公司工作区、角色、项目和审核设置控制。客户账号默认看不到任何内容，只能看到经理明确标记为客户可见的记录。因业务、账务、法律、安全或审计要求，部分记录可能需要保留。</span><span class="lang-en">Access is controlled by company workspace, role, project, and review settings. Client accounts see nothing by default — only records a manager explicitly marks client-visible. Some records may be retained for business, billing, legal, safety, audit, or security obligations.</span></p>
             </section>
         </main>
         <footer class="public-footer">

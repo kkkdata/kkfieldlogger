@@ -11,7 +11,7 @@ version: "3.8"
 
 services:
   kkfieldlogger:
-    image: kkkdata/kkfieldlogger:0.9.0-beta.2
+    image: kkkdata/kkfieldlogger:1.0.000
     container_name: kkfieldlogger
     restart: unless-stopped
     user: "1000:1000"
@@ -21,8 +21,9 @@ services:
     environment:
       - TZ=${TZ:-America/Chicago}
       - KK_DEPLOYMENT_PROFILE=private
-      - KK_APP_VERSION=0.9.0-beta.2
-      - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger:${KK_DB_PASSWORD:-kkfieldlogger-beta}@kkfieldlogger-db:5432/kkfieldlogger
+      - KK_APP_VERSION=1.0.000
+      - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger@kkfieldlogger-db:5432/kkfieldlogger
+      - KK_DATABASE_PASSWORD_FILE=/data/config/db_password
       - KK_MEDIA_ROOT=/data/media
       - KK_LOG_DIR=/app/logs
       - KK_SESSION_SECRET_FILE=/data/config/session_secret
@@ -43,7 +44,7 @@ services:
       start_period: 90s
 
   kkfieldlogger-worker:
-    image: kkkdata/kkfieldlogger:0.9.0-beta.2
+    image: kkkdata/kkfieldlogger:1.0.000
     container_name: kkfieldlogger-worker
     restart: unless-stopped
     user: "1000:1000"
@@ -54,14 +55,16 @@ services:
     environment:
       - TZ=${TZ:-America/Chicago}
       - KK_DEPLOYMENT_PROFILE=private
-      - KK_APP_VERSION=0.9.0-beta.2
-      - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger:${KK_DB_PASSWORD:-kkfieldlogger-beta}@kkfieldlogger-db:5432/kkfieldlogger
+      - KK_APP_VERSION=1.0.000
+      - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger@kkfieldlogger-db:5432/kkfieldlogger
+      - KK_DATABASE_PASSWORD_FILE=/data/config/db_password
       - KK_MEDIA_ROOT=/data/media
       - KK_LOG_DIR=/app/logs
       - KK_RETENTION_RECYCLE_BIN_DAYS=30
     volumes:
       - /Volume*/DockerAppData/kkfieldlogger/media:/data/media
       - /Volume*/DockerAppData/kkfieldlogger/logs:/app/logs
+      - /Volume*/DockerAppData/kkfieldlogger/config:/data/config
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import os,time,sys; sys.exit(0 if time.time()-os.path.getmtime('/tmp/kk-worker-heartbeat')<90 else 1)\""]
       interval: 30s
@@ -77,9 +80,20 @@ services:
       - TZ=${TZ:-America/Chicago}
       - POSTGRES_DB=kkfieldlogger
       - POSTGRES_USER=kkfieldlogger
-      - POSTGRES_PASSWORD=${KK_DB_PASSWORD:-kkfieldlogger-beta}
+      # No fixed credential ships with the app: a random password is
+      # generated on the config volume at first start (below) and shared
+      # with the app via KK_DATABASE_PASSWORD_FILE.
+      - POSTGRES_PASSWORD_FILE=/kkconfig/db_password
+    command: >-
+      bash -c "if [ ! -s /kkconfig/db_password ]; then
+      umask 077;
+      head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32 > /kkconfig/db_password;
+      chown 1000:1000 /kkconfig/db_password;
+      fi;
+      exec docker-entrypoint.sh postgres"
     volumes:
       - /Volume*/DockerAppData/kkfieldlogger/database:/var/lib/postgresql/data
+      - /Volume*/DockerAppData/kkfieldlogger/config:/kkconfig
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kkfieldlogger -d kkfieldlogger"]
       interval: 10s

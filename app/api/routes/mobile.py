@@ -497,15 +497,29 @@ async def upload_photo(
                     session_maker=request.app.state.session_maker,
                 )
         else:
-            enqueue_photo_ai_task(
-                db,
-                app_settings=request.app.state.settings,
-                photo=uploaded,
-                actor_user_id=None,
-                custom_prompt=None,
-                trigger_source="upload",
-                priority="normal",
-            )
+            # AI is optional and off by default: with no enabled backend,
+            # skip the pipeline job entirely instead of enqueueing work that
+            # can only retry and fail (a fresh NAS install would otherwise
+            # show failed-job alerts after its very first uploads).
+            from app.services.ai_pipeline import resolve_ai_backends
+
+            backends, _ = resolve_ai_backends(db, request.app.state.settings, uploaded)
+            if backends:
+                enqueue_photo_ai_task(
+                    db,
+                    app_settings=request.app.state.settings,
+                    photo=uploaded,
+                    actor_user_id=None,
+                    custom_prompt=None,
+                    trigger_source="upload",
+                    priority="normal",
+                )
+            else:
+                logger.info(
+                    "photo_ai_skipped_no_backend",
+                    photo_id=uploaded.id,
+                    company_id=uploaded.company_id,
+                )
         db.commit()
         if photo_media_kind(uploaded) != "video":
             schedule_job_worker(background_tasks.add_task, request.app.state.session_maker, request.app.state.settings)
