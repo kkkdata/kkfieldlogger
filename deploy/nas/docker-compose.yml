@@ -11,7 +11,7 @@ version: "3.8"
 
 services:
   kkfieldlogger:
-    image: kkkdata/kkfieldlogger:1.0.000
+    image: kkkdata/kkfieldlogger:1.0.001
     container_name: kkfieldlogger
     restart: unless-stopped
     user: "1000:1000"
@@ -21,7 +21,7 @@ services:
     environment:
       - TZ=${TZ:-America/Chicago}
       - KK_DEPLOYMENT_PROFILE=private
-      - KK_APP_VERSION=1.0.000
+      - KK_APP_VERSION=1.0.001
       - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger@kkfieldlogger-db:5432/kkfieldlogger
       - KK_DATABASE_PASSWORD_FILE=/data/config/db_password
       - KK_MEDIA_ROOT=/data/media
@@ -44,7 +44,7 @@ services:
       start_period: 90s
 
   kkfieldlogger-worker:
-    image: kkkdata/kkfieldlogger:1.0.000
+    image: kkkdata/kkfieldlogger:1.0.001
     container_name: kkfieldlogger-worker
     restart: unless-stopped
     user: "1000:1000"
@@ -55,7 +55,7 @@ services:
     environment:
       - TZ=${TZ:-America/Chicago}
       - KK_DEPLOYMENT_PROFILE=private
-      - KK_APP_VERSION=1.0.000
+      - KK_APP_VERSION=1.0.001
       - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger@kkfieldlogger-db:5432/kkfieldlogger
       - KK_DATABASE_PASSWORD_FILE=/data/config/db_password
       - KK_MEDIA_ROOT=/data/media
@@ -84,13 +84,10 @@ services:
       # generated on the config volume at first start (below) and shared
       # with the app via KK_DATABASE_PASSWORD_FILE.
       - POSTGRES_PASSWORD_FILE=/kkconfig/db_password
-    command: >-
-      bash -c "if [ ! -s /kkconfig/db_password ]; then
-      umask 077;
-      head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32 > /kkconfig/db_password;
-      chown 1000:1000 /kkconfig/db_password;
-      fi;
-      exec docker-entrypoint.sh postgres"
+    # Explicit 3-element exec form: some orchestrators do not shell-lex a
+    # folded command string (TOS App Center review 2026-09-10, exit 127).
+    entrypoint: ["bash", "-c", "if [ ! -s /kkconfig/db_password ]; then umask 077; head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32 > /kkconfig/db_password; chown 1000:1000 /kkconfig/db_password; fi; exec docker-entrypoint.sh postgres"]
+    command: []
     volumes:
       - /Volume*/DockerAppData/kkfieldlogger/database:/var/lib/postgresql/data
       - /Volume*/DockerAppData/kkfieldlogger/config:/kkconfig
