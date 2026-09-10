@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
+from functools import lru_cache
+
 from app.api.deps import get_current_user, get_current_user_optional, get_db, get_settings
 from app.core.config import Settings
 from app.core.security import generate_api_key, hash_password, normalize_api_key, verify_password
@@ -453,9 +455,21 @@ def _require_role(current_user: User, *roles: UserRole) -> None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 
+@lru_cache(maxsize=1)
+def _deployment_settings() -> Settings:
+    from app.core.config import load_settings
+
+    return load_settings()
+
+
 def _require_platform_control(current_user: User) -> None:
-    if not can_manage_companies(current_user):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if can_manage_companies(current_user):
+        return
+    # A private (NAS) deployment has no platform tier: the workspace admin
+    # owns the box and controls platform-level settings (AI backends etc.).
+    if _deployment_settings().is_private_deployment and is_tenant_admin(current_user):
+        return
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 
 def _require_company_admin_workspace(current_user: User) -> None:

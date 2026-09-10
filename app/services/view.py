@@ -68,6 +68,7 @@ def build_nav_sections(user: User | None, t) -> list[dict[str, object]]:
                     {"label": t("nav_employees"), "href": "/portal/employees"},
                     {"label": t("nav_users"), "href": "/portal/users"},
                     {"label": t("nav_ai_center"), "href": "/portal/ai-center"},
+                    {"label": t("nav_ai_backends"), "href": "/portal/ai-backends"},
                     {"label": t("nav_reports"), "href": "/portal/reports"},
                     {"label": t("nav_ip_cameras"), "href": "/portal/ip-cameras"},
                     {"label": t("nav_audit_logs"), "href": "/portal/audit-logs"},
@@ -166,14 +167,22 @@ def build_nav_items(user: User | None, t) -> list[dict[str, str]]:
 # Surfaces hidden in a private (NAS) deployment; the matching routes are
 # blocked centrally in app.main.
 PRIVATE_HIDDEN_NAV_HREFS = {"/portal/platform", "/portal/billing"}
+# Platform-level surfaces that tenant admins get ONLY on a private box,
+# where the workspace owner is the platform (AI backend config).
+PRIVATE_ONLY_TENANT_NAV_HREFS = {"/portal/ai-backends"}
 
 
 def filter_nav_sections_for_profile(sections: list[dict[str, object]], app_settings) -> list[dict[str, object]]:
-    if not getattr(app_settings, "is_private_deployment", False):
-        return sections
+    private = getattr(app_settings, "is_private_deployment", False)
     filtered: list[dict[str, object]] = []
     for section in sections:
-        items = [item for item in section["items"] if item.get("href") not in PRIVATE_HIDDEN_NAV_HREFS]
+        hrefs = {item.get("href") for item in section["items"]}
+        if private:
+            items = [item for item in section["items"] if item.get("href") not in PRIVATE_HIDDEN_NAV_HREFS]
+        elif "/portal/platform" not in hrefs:
+            items = [item for item in section["items"] if item.get("href") not in PRIVATE_ONLY_TENANT_NAV_HREFS]
+        else:
+            items = list(section["items"])
         if items:
             filtered.append({**section, "items": items})
     return filtered
