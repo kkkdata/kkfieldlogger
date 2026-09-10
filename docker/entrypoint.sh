@@ -13,6 +13,12 @@ if [ "${KK_PREUPGRADE_DUMP:-1}" != "0" ] && command -v pg_dump >/dev/null 2>&1; 
     dump_dir="${KK_BACKUP_DIR:-${KK_MEDIA_ROOT}/backups}"
     mkdir -p "$dump_dir"
     dsn="$(python -c 'import os, re; print(re.sub(r"\+\w+", "", os.environ.get("KK_DATABASE_URL") or os.environ.get("DATABASE_URL", "")))')"
+    # NAS installs keep the password in a file, not in the URL; hand it to
+    # pg_dump via PGPASSWORD so the pre-upgrade dump can authenticate.
+    if [ -n "${KK_DATABASE_PASSWORD_FILE:-}" ] && [ -s "${KK_DATABASE_PASSWORD_FILE}" ]; then
+      PGPASSWORD="$(cat "${KK_DATABASE_PASSWORD_FILE}")"
+      export PGPASSWORD
+    fi
     if [ -n "$dsn" ]; then
       ts="$(date +%Y%m%d_%H%M%S)"
       echo "Schema upgrade pending ($current_rev -> $head_rev); dumping database to $dump_dir first."

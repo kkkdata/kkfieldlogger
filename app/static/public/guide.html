@@ -58,8 +58,8 @@
             <p class="eyebrow"><span class="lang-zh">使用说明书</span><span class="lang-en">User manual</span></p>
             <h1><span class="lang-zh">KK Field Logger 使用说明书</span><span class="lang-en">KK Field Logger User Manual</span></h1>
             <p class="lead">
-                <span class="lang-zh">覆盖安装部署、工人拍摄、经理后台、AI 助手、数据维护与故障排查。适用于 0.9.x 测试版（云端与 NAS 私有部署通用，差异处会单独标注）。</span>
-                <span class="lang-en">Covers installation, field capture, the manager portal, AI assist, data maintenance, and troubleshooting. Applies to the 0.9.x beta (cloud and self-hosted NAS editions alike; differences are flagged where they exist).</span>
+                <span class="lang-zh">覆盖安装部署、工人拍摄、经理后台、AI 助手、数据维护与故障排查。适用于 1.0 及以上版本（云端与 NAS 私有部署通用，差异处会单独标注）。</span>
+                <span class="lang-en">Covers installation, field capture, the manager portal, AI assist, data maintenance, and troubleshooting. Applies to version 1.0 and later (cloud and self-hosted NAS editions alike; differences are flagged where they exist).</span>
             </p>
             <p style="font-size:13px;opacity:.7;">
                 <span class="lang-zh">提示：浏览器「打印」本页即可保存为 PDF 手册。截图均来自演示数据。</span>
@@ -181,7 +181,7 @@
                     <span class="lang-en">Sign in at <code>/login</code>. Interface language (中文/English) switches from the Language menu.</span>
                 </p>
                 <figure class="shot">
-                    <img src="/img/manual/login.png" alt="Login page" loading="lazy">
+                    <img src="https://api2.kkdatasvc.com/img/manual/login.png" alt="Login page" loading="lazy">
                     <figcaption><span class="lang-zh">登录页</span><span class="lang-en">Login page</span></figcaption>
                 </figure>
                 <h3><span class="lang-zh">5.1 今日工作台（登录首页）</span><span class="lang-en">5.1 Today workbench (landing page)</span></h3>
@@ -190,7 +190,7 @@
                     <span class="lang-en">It answers one question: <strong>what needs my attention today?</strong> Today's upload activity, alerts (queue backlog, failed processing), and shortcuts. The classic dashboard is one click away.</span>
                 </p>
                 <figure class="shot">
-                    <img src="/img/manual/today.png" alt="Today workbench" loading="lazy">
+                    <img src="https://api2.kkdatasvc.com/img/manual/today.png" alt="Today workbench" loading="lazy">
                     <figcaption><span class="lang-zh">今日工作台：上传脉搏、队列状态、待审入口一屏看全</span><span class="lang-en">Today workbench: upload pulse, queue state, and review shortcuts on one screen</span></figcaption>
                 </figure>
                 <h3><span class="lang-zh">5.2 照片库</span><span class="lang-en">5.2 Photo library</span></h3>
@@ -202,7 +202,7 @@
                     <li><span class="lang-zh"><strong>客户可见性</strong>：客户账号默认看不到任何照片，只有明确标记的才会出现——先审后见。</span><span class="lang-en"><strong>Client visibility</strong>: client accounts see nothing until a photo is explicitly marked visible — curation first.</span></li>
                 </ul>
                 <figure class="shot">
-                    <img src="/img/manual/photos.png" alt="Photo review page" loading="lazy">
+                    <img src="https://api2.kkdatasvc.com/img/manual/photos.png" alt="Photo review page" loading="lazy">
                     <figcaption><span class="lang-zh">照片库：多维筛选 + 批量操作 + 回收站</span><span class="lang-en">Photo library: filters, bulk actions, recycle bin</span></figcaption>
                 </figure>
                 <h3><span class="lang-zh">5.3 项目</span><span class="lang-en">5.3 Projects</span></h3>
@@ -216,7 +216,7 @@
                     <li><span class="lang-zh"><strong>用户</strong>（后台账号）：管理员可调整角色、重置密码、停用账号。</span><span class="lang-en"><strong>Users</strong> (portal accounts): admins change roles, reset passwords, deactivate.</span></li>
                 </ul>
                 <figure class="shot">
-                    <img src="/img/manual/employees.png" alt="Employees page" loading="lazy">
+                    <img src="https://api2.kkdatasvc.com/img/manual/employees.png" alt="Employees page" loading="lazy">
                     <figcaption><span class="lang-zh">员工管理：上传密钥的发放与轮换</span><span class="lang-en">Employees: issuing and rotating upload keys</span></figcaption>
                 </figure>
                 <h3><span class="lang-zh">5.5 报告</span><span class="lang-en">5.5 Reports</span></h3>
@@ -225,7 +225,7 @@
                     <span class="lang-en">Generate PDF reports by project and date range, download for filing; a <strong>progress-compare</strong> view sets two periods of the same project side by side. Failed generations retry with one click.</span>
                 </p>
                 <figure class="shot">
-                    <img src="/img/manual/reports.png" alt="Reports page" loading="lazy">
+                    <img src="https://api2.kkdatasvc.com/img/manual/reports.png" alt="Reports page" loading="lazy">
                     <figcaption><span class="lang-zh">报告中心：按项目和日期出 PDF</span><span class="lang-en">Reports: PDF by project and date range</span></figcaption>
                 </figure>
                 <h3><span class="lang-zh">5.6 IP 摄像头</span><span class="lang-en">5.6 IP cameras</span></h3>
@@ -280,8 +280,8 @@
                 </p>
                 <h3><span class="lang-zh">7.3 升级</span><span class="lang-en">7.3 Upgrades</span></h3>
                 <p>
-                    <span class="lang-zh">应用中心内点击更新即可；自建 Docker 部署执行 <code>docker compose pull &amp;&amp; docker compose up -d</code>。数据库迁移在启动时自动完成（升级前自动备份见 7.1）。</span>
-                    <span class="lang-en">Click update in the App Center; plain Docker installs run <code>docker compose pull &amp;&amp; docker compose up -d</code>. Migrations apply automatically on boot (with the pre-upgrade backup from 7.1).</span>
+                    <span class="lang-zh">如果应用中心提供更新入口，点击更新即可；否则（以及自建 Docker 部署）执行 <code>docker compose pull &amp;&amp; docker compose up -d</code>。数据库迁移在启动时自动完成（升级前自动备份见 7.1）。</span>
+                    <span class="lang-en">Use the App Center update entry when it offers one; otherwise (and on plain Docker installs) run <code>docker compose pull &amp;&amp; docker compose up -d</code>. Migrations apply automatically on boot (with the pre-upgrade backup from 7.1).</span>
                 </p>
                 <h3><span class="lang-zh">7.4 卸载与重装</span><span class="lang-en">7.4 Uninstall &amp; reinstall</span></h3>
                 <p>
@@ -329,8 +329,8 @@
             <section class="plain-card">
                 <h2 id="support"><span class="lang-zh">9. 获取帮助</span><span class="lang-en">9. Getting help</span></h2>
                 <p>
-                    <span class="lang-zh">测试版反馈与支持：<a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>，或 GitHub 仓库 <a href="https://github.com/kkkdata/kkfieldlogger/issues" rel="noopener">提交 Issue</a>。来信请附版本号（页面底部可见）与问题截图，定位更快。</span>
-                    <span class="lang-en">Beta feedback and support: <a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>, or <a href="https://github.com/kkkdata/kkfieldlogger/issues" rel="noopener">open a GitHub issue</a>. Include your version (shown in the page footer) and a screenshot — it speeds things up.</span>
+                    <span class="lang-zh">反馈与支持：<a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>，或 GitHub 仓库 <a href="https://github.com/kkkdata/kkfieldlogger/issues" rel="noopener">提交 Issue</a>。来信请附版本号（页面底部可见）与问题截图，定位更快。</span>
+                    <span class="lang-en">Feedback and support: <a href="mailto:Michelle@kkdatasvc.com">Michelle@kkdatasvc.com</a>, or <a href="https://github.com/kkkdata/kkfieldlogger/issues" rel="noopener">open a GitHub issue</a>. Include your version (shown in the page footer) and a screenshot — it speeds things up.</span>
                 </p>
             </section>
         </main>

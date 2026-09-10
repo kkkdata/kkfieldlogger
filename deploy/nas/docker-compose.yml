@@ -11,7 +11,7 @@ version: "3.8"
 
 services:
   kkfieldlogger:
-    image: kkkdata/kkfieldlogger:1.0.001
+    image: kkkdata/kkfieldlogger:1.0.002
     container_name: kkfieldlogger
     restart: unless-stopped
     user: "1000:1000"
@@ -21,7 +21,7 @@ services:
     environment:
       - TZ=${TZ:-America/Chicago}
       - KK_DEPLOYMENT_PROFILE=private
-      - KK_APP_VERSION=1.0.001
+      - KK_APP_VERSION=1.0.002
       - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger@kkfieldlogger-db:5432/kkfieldlogger
       - KK_DATABASE_PASSWORD_FILE=/data/config/db_password
       - KK_MEDIA_ROOT=/data/media
@@ -44,7 +44,7 @@ services:
       start_period: 90s
 
   kkfieldlogger-worker:
-    image: kkkdata/kkfieldlogger:1.0.001
+    image: kkkdata/kkfieldlogger:1.0.002
     container_name: kkfieldlogger-worker
     restart: unless-stopped
     user: "1000:1000"
@@ -55,9 +55,10 @@ services:
     environment:
       - TZ=${TZ:-America/Chicago}
       - KK_DEPLOYMENT_PROFILE=private
-      - KK_APP_VERSION=1.0.001
+      - KK_APP_VERSION=1.0.002
       - KK_DATABASE_URL=postgresql+psycopg://kkfieldlogger@kkfieldlogger-db:5432/kkfieldlogger
       - KK_DATABASE_PASSWORD_FILE=/data/config/db_password
+      - KK_SESSION_SECRET_FILE=/data/config/session_secret
       - KK_MEDIA_ROOT=/data/media
       - KK_LOG_DIR=/app/logs
       - KK_RETENTION_RECYCLE_BIN_DAYS=30
@@ -95,6 +96,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 90s
 
 x-app-meta:
   web:

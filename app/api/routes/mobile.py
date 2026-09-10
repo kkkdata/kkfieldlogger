@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response, RedirectResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -251,6 +251,12 @@ def _mobile_queue_info(db: Session, company_id: str, *, queue_position: int | No
 def root(request: Request, settings: Settings = Depends(get_settings)):
     accept = (request.headers.get("accept") or "").lower()
     if "text/html" in accept and "application/json" not in accept and "X-API-Key" not in request.headers:
+        # On a private (NAS) install the SaaS marketing homepage is wrong
+        # (its "request access" flow is gated off): the App Center opens
+        # this URL, so land the user on login — which forwards to the
+        # first-run /setup wizard on a fresh box.
+        if settings.is_private_deployment:
+            return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
         return FileResponse(PUBLIC_DIR / "index.html")
     return JSONResponse(
         HealthResponse(
