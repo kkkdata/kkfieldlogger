@@ -87,7 +87,6 @@ services:
     # Explicit 3-element exec form: some orchestrators do not shell-lex a
     # folded command string (TOS App Center review 2026-09-10, exit 127).
     entrypoint: ["bash", "-c", "if [ ! -s /kkconfig/db_password ]; then umask 077; head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32 > /kkconfig/db_password; chown 1000:1000 /kkconfig/db_password; fi; exec docker-entrypoint.sh postgres"]
-    command: []
     volumes:
       - /Volume*/DockerAppData/kkfieldlogger/database:/var/lib/postgresql/data
       - /Volume*/DockerAppData/kkfieldlogger/config:/kkconfig
